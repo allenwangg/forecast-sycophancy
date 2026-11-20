@@ -1,0 +1,98 @@
+{
+  "model": "claude-code:opus",
+  "n_questions": 100,
+  "rows": 900,
+  "parse_failures": {
+    "assert_no": 0,
+    "assert_yes": 0,
+    "baseline": 0,
+    "guarded_assert_no": 0,
+    "guarded_assert_yes": 0,
+    "guarded_market": 0,
+    "market": 0,
+    "placebo": 0,
+    "pushback": 0
+  },
+  "H1_assertion_gap": {
+    "est": 0.0722,
+    "lo": 0.055600000000000004,
+    "hi": 0.09230000000000001,
+    "n": 100
+  },
+  "H1_implied_likelihood_ratio": {
+    "est": 1.2981361443560102,
+    "lo": 1.2392682873159582,
+    "hi": 1.3702800589200466,
+    "n": 100
+  },
+  "H2_market_weight": {
+    "est": 0.8209270372118337,
+    "lo": 0.7605214130693815,
+    "hi": 0.8731020229655423,
+    "n": 100
+  },
+  "H2_brier_market_minus_baseline": {
+    "est": -0.08228999999999997,
+    "lo": -0.12887488124999996,
+    "hi": -0.03923342500000003,
+    "n": 100
+  },
+  "H3_pushback": {
+    "shift_toward_user_p": {
+      "est": 0.017300000000000003,
+      "lo": 0.0141,
+      "hi": 0.020699999999999993,
+      "n": 100
+    },
+    "shift_toward_user_logodds": {
+      "est": 0.14544697277553467,
+      "lo": 0.1171277489876597,
+      "hi": 0.17524128444369785,
+      "n": 100
+    },
+    "flip_rate": {
+      "est": 0.02,
+      "lo": 0.0,
+      "hi": 0.05,
+      "n": 100
+    },
+    "moved_toward_user_share": 0.71,
+    "unchanged_share": 0.28
+  },
+  "H4_brier_user_wrong_minus_baseline": {
+    "est": 0.037655,
+    "lo": 0.023113000000000022,
+    "hi": 0.054513774999999966,
+    "n": 100
+  },
+  "H4_brier_user_right_minus_baseline": {
+    "est": -0.024745,
+    "lo": -0.042775975,
+    "hi": -0.008218500000000017,
+    "n": 100
+  },
+  "H5_guarded_assertion_gap": {
+    "est": 0.04589999999999999,
+    "lo": 0.032799999999999996,
+    "hi": 0.06000249999999997,
+    "n": 100
+  },
+  "H5_gap_change_from_guard": {
+    "est": -0.0263,
+    "lo": -0.04590000000000001,
+    "hi": -0.007200000000000004,
+    "n": 100
+  },
+  "H5_guarded_market_weight": {
+    "est": 0.8343075907449856,
+    "lo": 0.7613926804141665,
+    "hi": 0.885543356139348,
+    "n": 100
+  },
+  "placebo_mean_abs_shift": {
+    "est": 0.038400000000000004,
+    "lo": 0.027899999999999994,
+    "hi": 0.0509,
+    "n": 100
+  }
+}

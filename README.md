@@ -12,7 +12,7 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
-## Results: Gemma 3 4B and 12B (27B and Experiment 2 running)
+## Results: Gemma 3 4B and 12B, Claude Opus 5.5 (27B and Experiment 2 running)
 
 Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
 failures. Brackets are 95% paired bootstrap CIs over questions.
@@ -61,6 +61,60 @@ shown otherwise.
 
 Tables and CIs: [`results/comparison.md`](results/comparison.md), from
 `python -m fsyc.compare`.
+
+### Claude Opus 5.5 (through Claude Code, n = 100, different questions)
+
+Pre-registered in Addendum B before any call. Read the caveats first,
+because this is a weaker setup than the Gemma runs:
+
+- **Different questions.** Claude's knowledge runs to June 2026, so it gets
+  a second set built by the same code from questions asked after
+  2026-06-30 (first 100 of `data/questions_post_2026-06.jsonl`, 45 YES /
+  55 NO). Nothing below is paired with Gemma.
+- **A product harness, not the bare model.** Calls go through the Claude
+  Code CLI in headless mode on a subscription login, not the API. Its
+  system prompt is replaced and tools are off, but the CLI adds about 4,300
+  tokens of context per call that I cannot inspect. That context could
+  itself affect how the model treats user opinions.
+- **Not greedy.** One sample at product defaults with private reasoning.
+  The placebo row is the noise floor for that.
+
+900 calls, 0 parse failures, served model `claude-opus-5-5` on every call.
+
+| | Claude Opus 5.5 (n=100) | for reference: gemma3:12b (n=200, other questions) |
+|---|---|---|
+| Opinion gap, p(says YES) − p(says NO) | 0.07 [0.06, 0.09] | 0.24 [0.21, 0.27] |
+| Implied likelihood ratio of one opinion | 1.30 [1.24, 1.37] | 1.86 [1.73, 2.01] |
+| "I disagree": mean move toward user | 0.02 [0.01, 0.02] | 0.23 [0.22, 0.24] |
+| "I disagree": answers crossing 50% (%) | 2 [0, 5] | 46 [38, 52] |
+| Weight on real market price (0 to 1) | 0.82 [0.76, 0.87] | 0.93 [0.88, 0.96] |
+| Brier change when user is wrong | +0.04 [0.02, 0.06] | +0.12 [0.10, 0.15] |
+| Opinion gap with guard prompt | 0.05 [0.03, 0.06] | 0.05 [0.03, 0.06] |
+| Placebo: mean absolute change | 0.04 [0.03, 0.05] | 0.06 [0.05, 0.08] |
+| Baseline Brier (always-50% = 0.250) | 0.224 | 0.279 |
+| Baseline AUROC | 0.75 | 0.62 |
+
+- **Pushback mostly fails.** After "I disagree" with no new information,
+  the answer moved by 0.02 on average, 28% of answers did not change at
+  all, and 2 of 100 crossed 50%. A typical reply: *"You haven't given a new
+  reason, so I'm keeping my estimate roughly where it was. If you know
+  something specific... please share it and I'll update."*
+- **A stated opinion still moves it a little.** The gap is 0.07, with a CI
+  that excludes 0, and it is directional (+0.04 for YES, −0.03 for NO),
+  while the placebo's signed mean is +0.02. An unexplained opinion is
+  treated like a likelihood ratio of 1.3. Whether 1.3 is too much is a
+  judgment call: a stranger's stated confidence is weak evidence, not zero
+  evidence.
+- **It uses evidence.** Market weight 0.82; Brier improves from 0.224 to
+  0.142 with the price, matching the market itself (0.146).
+- **The guard prompt does little here** (gap 0.07 → 0.05), because there is
+  little left to remove.
+- **Pre-registered predictions:** gap below 12B's (held), flip rate below
+  12B's (held), market weight at least 12B's (**did not hold**: 0.82 vs
+  0.93, on different questions).
+- This is the only model here whose unaided forecasts beat always-50%.
+
+Report: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt).
 
 ### Gemma 3 4B in detail
 
@@ -171,7 +225,7 @@ against ground truth before they are used on a real model.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                       # 29 tests, no network, no model
+python -m pytest -q                       # 33 tests, no network, no model
 ollama pull gemma3:4b && ollama pull gemma3:12b
 bash scripts/reproduce.sh                 # data snapshot -> runs -> reports
 ```
@@ -184,7 +238,7 @@ produced.
 |---|---|
 | `fsyc/data.py` | ForecastBench download, filters, stratified sample |
 | `fsyc/prompts.py` | The conditions |
-| `fsyc/backends.py` | Ollama, Claude API, simulated forecaster; probability parser |
+| `fsyc/backends.py` | Ollama, Claude Code CLI, Claude API (untested live), simulated forecaster; parser |
 | `fsyc/run.py` | Questions × conditions → JSONL, resumable |
 | `fsyc/analyze.py` | Pre-registered statistics, tables, figures |
 | `fsyc/compare.py` | Side-by-side models, paired difference in opinion gap |
@@ -225,8 +279,10 @@ effect that matters, which is whether it also stops the model using evidence.
 - **Small model, little skill.** Gemma 3 4B forecasts worse than always answering 50%
   here, so its "beliefs" are weak to begin with, and weak beliefs may be
   easier to push. 12B has somewhat more skill and defers about half as
-  much, which fits that reading; neither beats always-50% unaided. Frontier models are not tested; `fsyc/backends.py` has a
-  Claude backend ready, but no API key was available for this project.
+  much, which fits that reading; neither beats always-50% unaided. The one frontier model tested (Claude
+  Opus 5.5) went through a product harness with context I cannot see, on
+  100 different questions; a clean API run on the same questions is the
+  obvious next step and was not done for cost.
 - **One wording per condition.** Each condition is a single phrasing. The
   effect size depends on wording ("pretty confident" vs. "certain", with or
   without a stated credential). A natural extension is a dose-response over
@@ -252,7 +308,8 @@ effect that matters, which is whether it also stops the model using evidence.
 
 1. Gemma 3 27B (running): a third point on scale. Experiment 2
    (dose-response, pre-registered in Addendum A) is also running.
-2. Claude models through the API, same 200 questions.
+2. Claude through the API rather than a product harness, and more than one
+   Claude size.
 3. Dose-response: vary assertion strength and claimed expertise.
 4. Mechanism: a linear probe on hidden states for "the model's answer before
    the user spoke". Does pressure change the internal estimate, or only the

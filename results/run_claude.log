@@ -1,0 +1,11 @@
+10/100 questions, 0 new calls, 0.0 min
+20/100 questions, 91 new calls, 2.7 min
+30/100 questions, 184 new calls, 5.9 min
+40/100 questions, 280 new calls, 9.1 min
+50/100 questions, 373 new calls, 11.9 min
+60/100 questions, 469 new calls, 14.9 min
+70/100 questions, 556 new calls, 17.3 min
+80/100 questions, 643 new calls, 19.8 min
+90/100 questions, 732 new calls, 23.2 min
+100/100 questions, 810 new calls, 25.6 min
+done: 810 new rows -> results/claude-code__opus.jsonl
