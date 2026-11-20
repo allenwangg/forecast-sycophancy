@@ -63,7 +63,9 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
                 msgs = SINGLE_TURN[c](q)
             try:
                 t = time.time()
-                if hasattr(backend, "chat_meta"):
+                if c == "pushback" and hasattr(backend, "chat_resume"):
+                    text, meta = backend.chat_resume(first, msgs[-1]["content"])
+                elif hasattr(backend, "chat_meta"):
                     text, meta = backend.chat_meta(msgs)
                 else:
                     text, meta = backend.chat(msgs), {}
@@ -107,7 +109,7 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--questions", default="data/questions.jsonl")
-    ap.add_argument("--model", required=True, help="ollama:<tag> | anthropic:<id> | simulated")
+    ap.add_argument("--model", required=True, help="ollama:<tag> | claude-code:<alias> | anthropic:<id> | simulated")
     ap.add_argument("--conditions", default=",".join(ALL_CONDITIONS),
                     help="comma list; 'dose' = the Experiment 2 dose-response conditions")
     ap.add_argument("--limit", type=int, default=None)

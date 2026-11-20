@@ -9,9 +9,12 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import os
 import re
+import subprocess
+from pathlib import Path
 
 _PROB_RE = re.compile(r"probability\W{0,3}?\s*[:=]\s*\**\s*([0-9]*\.?[0-9]+)\s*(%?)", re.IGNORECASE)
 
@@ -86,6 +89,65 @@ class AnthropicBackend:
         return self.chat_meta(messages)[0]
 
 
+class ClaudeCodeBackend:
+    """Claude through the Claude Code command-line tool in headless mode
+    (`claude -p`), using whatever login the CLI has. This is NOT the bare
+    model: see PREREGISTRATION.md Addendum B for what differs.
+
+    - Claude Code's own system prompt is replaced (`--system-prompt`) by a
+      one-line neutral prompt, or by the guard prompt in guarded conditions.
+    - All tools, MCP servers and user/project settings are switched off.
+    - Decoding is the product default; temperature cannot be set.
+    - The second turn of `pushback` resumes the baseline call's session.
+    """
+
+    NEUTRAL_SYSTEM = "You are a helpful assistant."
+
+    def __init__(self, model: str = "opus", timeout: float = 600.0, workdir: str | None = None):
+        self.model, self.timeout = model, timeout
+        self.workdir = Path(workdir or Path.home() / ".cache" / "fsyc-claude-cli")
+        self.workdir.mkdir(parents=True, exist_ok=True)
+        self.name = f"claude-code:{model}"
+
+    def _call(self, prompt, system, resume=None):
+        cmd = ["claude", "-p", prompt, "--model", self.model, "--output-format", "json",
+               "--system-prompt", system, "--tools", "", "--strict-mcp-config",
+               "--setting-sources", ""]
+        if resume:
+            cmd += ["--resume", resume]
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}  # never bill an API account
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout,
+                           cwd=self.workdir, env=env)
+        try:
+            d = json.loads(r.stdout)
+        except json.JSONDecodeError:
+            raise RuntimeError(f"claude CLI gave no JSON (exit {r.returncode}): {r.stderr[:300]}")
+        if d.get("is_error"):
+            raise RuntimeError(f"claude CLI error: {str(d.get('result'))[:300]}")
+        u = d.get("usage") or {}
+        meta = {"session_id": d.get("session_id"), "served_models": sorted(d.get("modelUsage") or {}),
+                "input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
+                "num_turns": d.get("num_turns")}
+        return d.get("result") or "", meta
+
+    def chat_meta(self, messages):
+        system = "\n".join(m["content"] for m in messages if m["role"] == "system") or self.NEUTRAL_SYSTEM
+        users = [m for m in messages if m["role"] != "system"]
+        if len(users) != 1:
+            raise ValueError("multi-turn prompts go through chat_resume")
+        return self._call(users[0]["content"], system)
+
+    def chat_resume(self, first_record: dict, user_text: str):
+        """Second turn in the session that produced `first_record`."""
+        if not first_record.get("session_id"):
+            raise RuntimeError("baseline row has no session_id to resume")
+        return self._call(user_text, self.NEUTRAL_SYSTEM, resume=first_record["session_id"])
+
+    def chat(self, messages):
+        return self.chat_meta(messages)[0]
+
+
 def _logit(p):
     p = min(max(p, 1e-4), 1 - 1e-4)
     return math.log(p / (1 - p))
@@ -141,6 +203,8 @@ def make_backend(spec: str, **kw):
         return OllamaBackend(name, **kw)
     if kind == "anthropic":
         return AnthropicBackend(name, **kw)
+    if kind == "claude-code":
+        return ClaudeCodeBackend(name or "opus", **kw)
     if kind == "simulated":
         return SimulatedForecaster()
     raise ValueError(f"unknown backend {spec!r}")

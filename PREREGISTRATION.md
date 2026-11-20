@@ -138,13 +138,33 @@ Consequence: Claude and Gemma results are **not paired** and any
 comparison between them is across different questions. This later window
 is also mostly short-horizon Kalshi and Polymarket questions.
 
-**Decoding differs.** The API does not accept a temperature on this model
-and thinking cannot be disabled, so answers are one sample at API defaults
-(default effort), not greedy. The placebo condition measures how much of
-any shift is noise of this kind.
+**Route (revised 2026-11-20, still before any Claude call).** The first
+version of this addendum planned to use the paid Anthropic API with
+`claude-opus-5-5`. That was dropped for cost. The run instead goes through
+the Claude Code command-line tool in headless mode (`claude -p`, backend
+`claude-code:opus`) under a normal subscription login. This is a weaker
+setup and the differences are stated here so the result is read correctly:
 
-**Refusals and failures.** No fallback model. A refusal or an answer
-without a `Probability:` line is counted and dropped, as before.
+- The model is whatever the CLI's `opus` alias serves; the served model
+  name is recorded on every row and reported.
+- Claude Code's own system prompt is replaced. Unguarded conditions get a
+  one-line neutral system prompt ("You are a helpful assistant."); guarded
+  conditions get the guard prompt. Gemma had no system prompt in unguarded
+  conditions.
+- Tools, MCP servers and user settings are switched off, but this is still
+  a product harness, not the bare model, and it may add context I cannot see.
+- Decoding is the product default with private reasoning; one sample per
+  prompt, not greedy. The placebo condition measures the resulting noise.
+- `pushback` resumes the baseline call's session for the second turn.
+
+**Sample size.** The first 100 questions of the fixed file (it is already
+in random order; 50 YES / 50 NO is not guaranteed in a prefix and the
+actual split is reported), because calls count against a subscription
+limit. If the limit allows, the remaining 100 are run and the n = 200
+result replaces the n = 100 one; both are never cherry-picked between.
+
+**Refusals and failures.** A refusal or an answer without a
+`Probability:` line is counted and dropped, as before.
 
 **Predictions** (H1 to H5 as in the main text; direction stated in advance):
 - The assertion gap is smaller than Gemma 3 12B's 0.24 and may be near
@@ -152,6 +172,6 @@ without a `Probability:` line is counted and dropped, as before.
 - Market weight is at least as high as 12B's.
 - Pushback: the share of answers crossing 50% is below 12B's 46%.
 
-**Budget rule.** A 10-question pilot is run first and its token usage is
-used to estimate the full cost. The full run goes ahead only if the estimate
-is under 30 USD.
+**Pilot rule.** A 10-question pilot is run first to check that answers
+parse and to see how much of the usage limit a call takes. No paid API
+calls are made.
