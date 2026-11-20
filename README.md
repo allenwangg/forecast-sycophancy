@@ -12,7 +12,7 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
-## Results: Gemma 3 4B and 12B, Claude Opus 5.5 (27B running)
+## Results: Gemma 3 4B and 12B, Claude Opus 5.5 and Fable 5.2 (27B running)
 
 Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
 failures. Brackets are 95% paired bootstrap CIs over questions.
@@ -62,15 +62,16 @@ shown otherwise.
 Tables and CIs: [`results/comparison.md`](results/comparison.md), from
 `python -m fsyc.compare`.
 
-### Claude Opus 5.5 (through Claude Code, n = 100, different questions)
+### Claude Opus 5.5 and Claude Fable 5.2 (through Claude Code, n = 100, different questions)
 
-Pre-registered in Addendum B before any call. Read the caveats first,
-because this is a weaker setup than the Gemma runs:
+Pre-registered in Addenda B and C before any call to each model. Read the
+caveats first, because this is a weaker setup than the Gemma runs:
 
-- **Different questions.** Claude's knowledge runs to June 2026, so it gets
-  a second set built by the same code from questions asked after
+- **Different questions.** These models' knowledge runs to June 2026, so
+  they get a second set built by the same code from questions asked after
   2026-06-30 (first 100 of `data/questions_post_2026-06.jsonl`, 45 YES /
-  55 NO). Nothing below is paired with Gemma.
+  55 NO). Nothing below is paired with Gemma. The two Claude models share
+  the same 100 questions and are paired with each other.
 - **A product harness, not the bare model.** Calls go through the Claude
   Code CLI in headless mode on a subscription login, not the API. Its
   system prompt is replaced and tools are off, but the CLI adds about 4,300
@@ -78,43 +79,57 @@ because this is a weaker setup than the Gemma runs:
   itself affect how the model treats user opinions.
 - **Not greedy.** One sample at product defaults with private reasoning.
   The placebo row is the noise floor for that.
+- **Not independent.** The assistant that helped build and analyze this
+  project is a Claude model, including one of the two evaluated here. The
+  prompts, pre-registered statistics and raw outputs are all in the repo so
+  the numbers can be checked without trusting that.
 
-900 calls, 0 parse failures, served model `claude-opus-5-5` on every call.
+900 calls per model, 0 parse failures, served model as named on every call.
 
-| | Claude Opus 5.5 (n=100) | for reference: gemma3:12b (n=200, other questions) |
-|---|---|---|
-| Opinion gap, p(says YES) − p(says NO) | 0.07 [0.06, 0.09] | 0.24 [0.21, 0.27] |
-| Implied likelihood ratio of one opinion | 1.30 [1.24, 1.37] | 1.86 [1.73, 2.01] |
-| "I disagree": mean move toward user | 0.02 [0.01, 0.02] | 0.23 [0.22, 0.24] |
-| "I disagree": answers crossing 50% (%) | 2 [0, 5] | 46 [38, 52] |
-| Weight on real market price (0 to 1) | 0.82 [0.76, 0.87] | 0.93 [0.88, 0.96] |
-| Brier change when user is wrong | +0.04 [0.02, 0.06] | +0.12 [0.10, 0.15] |
-| Opinion gap with guard prompt | 0.05 [0.03, 0.06] | 0.05 [0.03, 0.06] |
-| Placebo: mean absolute change | 0.04 [0.03, 0.05] | 0.06 [0.05, 0.08] |
-| Baseline Brier (always-50% = 0.250) | 0.224 | 0.279 |
-| Baseline AUROC | 0.75 | 0.62 |
+| | Claude Opus 5.5 | Claude Fable 5.2 | for reference: gemma3:12b (n=200, other questions) |
+|---|---|---|---|
+| Opinion gap, p(says YES) − p(says NO) | 0.07 [0.06, 0.09] | 0.01 [0.00, 0.03] | 0.24 [0.21, 0.27] |
+| Implied likelihood ratio of one opinion | 1.30 [1.24, 1.37] | 1.06 [1.03, 1.10] | 1.86 [1.73, 2.01] |
+| "I disagree": mean move toward user | 0.02 [0.01, 0.02] | 0.00 [0.00, 0.00] | 0.23 [0.22, 0.24] |
+| "I disagree": answers crossing 50% (%) | 2 [0, 5] | 0 | 46 [38, 52] |
+| "I disagree": answers left unchanged (%) | 28 | 99 | 0 |
+| Weight on real market price (0 to 1) | 0.82 [0.76, 0.87] | 0.80 [0.69, 0.90] | 0.93 [0.88, 0.96] |
+| Brier change when user is wrong | +0.04 [0.02, 0.06] | +0.01 [0.00, 0.02] | +0.12 [0.10, 0.15] |
+| Opinion gap with guard prompt | 0.05 [0.03, 0.06] | 0.03 [0.02, 0.04] | 0.05 [0.03, 0.06] |
+| Placebo: mean absolute change | 0.04 [0.03, 0.05] | 0.04 [0.03, 0.05] | 0.06 [0.05, 0.08] |
+| Baseline Brier (always-50% = 0.250) | 0.224 | 0.205 | 0.279 |
+| Baseline AUROC | 0.75 | 0.78 | 0.62 |
 
-- **Pushback mostly fails.** After "I disagree" with no new information,
-  the answer moved by 0.02 on average, 28% of answers did not change at
-  all, and 2 of 100 crossed 50%. A typical reply: *"You haven't given a new
-  reason, so I'm keeping my estimate roughly where it was. If you know
-  something specific... please share it and I'll update."*
-- **A stated opinion still moves it a little.** The gap is 0.07, with a CI
-  that excludes 0, and it is directional (+0.04 for YES, −0.03 for NO),
-  while the placebo's signed mean is +0.02. An unexplained opinion is
-  treated like a likelihood ratio of 1.3. Whether 1.3 is too much is a
-  judgment call: a stranger's stated confidence is weak evidence, not zero
-  evidence.
-- **It uses evidence.** Market weight 0.82; Brier improves from 0.224 to
-  0.142 with the price, matching the market itself (0.146).
-- **The guard prompt does little here** (gap 0.07 → 0.05), because there is
-  little left to remove.
-- **Pre-registered predictions:** gap below 12B's (held), flip rate below
-  12B's (held), market weight at least 12B's (**did not hold**: 0.82 vs
-  0.93, on different questions).
-- This is the only model here whose unaided forecasts beat always-50%.
+- **Pushback mostly fails on Opus 5.5 and fails on Fable 5.2.** After "I
+  disagree" with no new information, Opus moved 0.02 on average and 2 of
+  100 answers crossed 50%. Fable repeated its first number in 99 of 100
+  cases. A typical Fable reply: *"Your disagreement doesn't come with new
+  information... so I have nothing concrete to update on... If you know the
+  market's actual resolution criteria or the results, tell me and I will
+  revise accordingly. Until then I am holding my estimate."*
+- **A stated opinion moves Opus a little and Fable barely.** Opus: gap
+  0.07, directional (+0.04 for YES, −0.03 for NO). Fable: gap 0.014
+  [0.004, 0.025], which is smaller than its own placebo noise (mean
+  absolute change 0.035) though the CI excludes 0. Paired difference in
+  gap, Fable minus Opus: −0.06 [−0.08, −0.04].
+- **Both use evidence.** Market weights 0.82 and 0.80; with the price,
+  both match the market's own Brier (0.142 and 0.140 vs 0.146).
+- **The guard prompt has nothing to remove.** Opus 0.07 → 0.05. On Fable the
+  guarded gap (0.03) is not lower than the unguarded one (0.01); the
+  change is +0.01 [−0.00, +0.03].
+- **Pre-registered predictions.** Opus: gap below 12B's (held), flip rate
+  below 12B's (held), market weight at least 12B's (**did not hold**: 0.82
+  vs 0.93, on different questions). Fable: gap and pushback shift not
+  larger than Opus's (held).
+- These are the only models here whose unaided forecasts beat always-50%.
+- A caution on reading "0 moved": holding firm is right here only because
+  the user gave no information. This design cannot tell a model that
+  weighs evidence correctly from one that ignores users. The market
+  condition says both models do update on evidence, but a test where the
+  user supplies a *good* reason is the missing control.
 
-Report: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt).
+Reports: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt),
+[`results/claude-code__fable/report.txt`](results/claude-code__fable/report.txt).
 
 ### Experiment 2: dose-response on Gemma 3 4B
 
@@ -312,8 +327,8 @@ effect that matters, which is whether it also stops the model using evidence.
 - **Small model, little skill.** Gemma 3 4B forecasts worse than always answering 50%
   here, so its "beliefs" are weak to begin with, and weak beliefs may be
   easier to push. 12B has somewhat more skill and defers about half as
-  much, which fits that reading; neither beats always-50% unaided. The one frontier model tested (Claude
-  Opus 5.5) went through a product harness with context I cannot see, on
+  much, which fits that reading; neither beats always-50% unaided. The two frontier models tested (Claude
+  Opus 5.5 and Fable 5.2) went through a product harness with context I cannot see, on
   100 different questions; a clean API run on the same questions is the
   obvious next step and was not done for cost.
 - **One wording per condition.** Each condition is a single phrasing. The
@@ -343,7 +358,8 @@ effect that matters, which is whether it also stops the model using evidence.
    (dose-response, pre-registered in Addendum A) is also running.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
-3. Dose-response: vary assertion strength and claimed expertise.
+3. An informed-user condition: the user gives a correct, checkable reason.
+   Does a model that resists bare pushback still update when it should?
 4. Mechanism: a linear probe on hidden states for "the model's answer before
    the user spoke". Does pressure change the internal estimate, or only the
    stated one? That separates a model that is persuaded from one that is

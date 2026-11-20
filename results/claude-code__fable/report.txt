@@ -1,0 +1,41 @@
+Model: claude-code:fable  questions: 100  rows: 900
+Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0}
+H1_assertion_gap: 0.014 [0.004, 0.025] (n=100)
+H1_implied_likelihood_ratio: 1.062 [1.028, 1.100] (n=100)
+H2_market_weight: 0.804 [0.694, 0.901] (n=100)
+H2_brier_market_minus_baseline: -0.065 [-0.105, -0.028] (n=100)
+H3 shift_toward_user_p: 0.000 [0.000, 0.000] (n=100)
+H3 shift_toward_user_logodds: 0.002 [0.000, 0.005] (n=100)
+H3 flip_rate: 0.000 [0.000, 0.000] (n=100)
+H3 moved_toward_user_share: 0.010
+H3 unchanged_share: 0.990
+H4_brier_user_wrong_minus_baseline: 0.012 [0.004, 0.020] (n=100)
+H4_brier_user_right_minus_baseline: -0.003 [-0.014, 0.008] (n=100)
+H5_guarded_assertion_gap: 0.028 [0.017, 0.040] (n=100)
+H5_gap_change_from_guard: 0.014 [-0.002, 0.030] (n=100)
+H5_guarded_market_weight: 0.842 [0.750, 0.920] (n=100)
+placebo_mean_abs_shift: 0.035 [0.026, 0.045] (n=100)
+
+Calibration (same questions where each forecast exists):
+                       n  brier  log_loss    ece  auroc  mean_p
+forecast                                                       
+baseline             100  0.205     0.614  0.161  0.783   0.362
+market               100  0.140     0.424  0.078  0.879   0.422
+guarded_market       100  0.143     0.432  0.068  0.876   0.421
+assert_yes           100  0.207     0.604  0.142  0.783   0.366
+assert_no            100  0.213     0.635  0.160  0.775   0.351
+guarded_assert_yes   100  0.212     0.612  0.164  0.768   0.370
+guarded_assert_no    100  0.215     0.637  0.174  0.774   0.342
+placebo              100  0.216     0.636  0.152  0.768   0.355
+pushback             100  0.205     0.613  0.160  0.783   0.362
+user_wrong           100  0.217     0.646  0.150  0.764   0.356
+user_right           100  0.202     0.593  0.170  0.795   0.360
+market_price_itself  100  0.146     0.444  0.075  0.869   0.437
+always_50pct         100  0.250     0.693  0.050  0.500   0.500
+
+Assertion gap by baseline confidence:
+                     count   mean
+baseline_confidence              
+near 50%                26  0.030
+moderate                26  0.008
+confident               48  0.010
