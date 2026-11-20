@@ -144,6 +144,23 @@ def heterogeneity(w):
     return d.groupby("baseline_confidence", observed=False)["gap"].agg(["count", "mean"])
 
 
+def dose_response(w):
+    """Experiment 2: assertion gap and implied likelihood ratio per wording."""
+    from .prompts import DOSE_LEVELS, dose_name
+    out = {}
+    for lvl in DOSE_LEVELS:
+        y, n = dose_name(lvl, "YES"), dose_name(lvl, "NO")
+        if y in w and n in w:
+            out[lvl] = {"gap": assertion_gap(w, y, n), "likelihood_ratio": assertion_lr(w, y, n)}
+    if "weak" in out and "strong" in out:
+        d = _cols(w, dose_name("weak", "YES"), dose_name("weak", "NO"),
+                  dose_name("strong", "YES"), dose_name("strong", "NO"))
+        x = ((d[dose_name("strong", "YES")] - d[dose_name("strong", "NO")])
+             - (d[dose_name("weak", "YES")] - d[dose_name("weak", "NO")])).to_numpy()
+        out["strong_minus_weak_gap"] = _boot(lambda i: x[i].mean(), len(x))
+    return out
+
+
 def analyze(df: pd.DataFrame) -> dict:
     w = wide(df)
     conds = [c for c in ["baseline", "market", "guarded_market", "assert_yes", "assert_no",
@@ -172,6 +189,9 @@ def analyze(df: pd.DataFrame) -> dict:
         out["H5_guarded_market_weight"] = market_weight(w, "guarded_market")
     if "placebo" in w:
         out["placebo_mean_abs_shift"] = placebo_shift(w)
+    dr = dose_response(w)
+    if len(dr) > 1:
+        out["E2_dose_response"] = dr
     cal_w = w.copy()
     cal_w["market_price_itself"] = cal_w["market_price"]
     cal_w["always_50pct"] = 0.5
@@ -243,6 +263,25 @@ def plots(res, outdir: Path):
         plt.close(fig)
 
 
+def dose_plot(res, outdir: Path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    dr = res["stats"].get("E2_dose_response")
+    if not dr:
+        return
+    lv = [k for k in dr if "gap" in dr[k]]
+    fig, ax = plt.subplots(figsize=(6, 3.2))
+    est = [dr[k]["gap"]["est"] for k in lv]
+    err = [[dr[k]["gap"]["est"] - dr[k]["gap"]["lo"] for k in lv], [dr[k]["gap"]["hi"] - dr[k]["gap"]["est"] for k in lv]]
+    ax.bar(lv, est, yerr=err, color="#2a6fdb", capsize=4)
+    ax.set_ylabel("p(user says YES) - p(user says NO)")
+    ax.set_title(f"Opinion effect by wording: {res['stats']['model']}")
+    fig.tight_layout()
+    fig.savefig(outdir / "dose_response.png", dpi=150)
+    plt.close(fig)
+
+
 def _fmt(v):
     return f"{v['est']:.3f} [{v['lo']:.3f}, {v['hi']:.3f}] (n={v['n']})"
 
@@ -257,6 +296,14 @@ def report(res) -> str:
         elif k == "H3_pushback":
             for kk, vv in v.items():
                 lines.append(f"H3 {kk}: {_fmt(vv) if isinstance(vv, dict) else f'{vv:.3f}'}")
+    if "E2_dose_response" in s:
+        lines.append("\nExperiment 2, dose-response (gap = p(says YES) - p(says NO)):")
+        for lvl, v in s["E2_dose_response"].items():
+            if "gap" in v:
+                lines.append(f"  {lvl:>7}: gap {_fmt(v['gap'])}  LR {v['likelihood_ratio']['est']:.2f} "
+                             f"[{v['likelihood_ratio']['lo']:.2f}, {v['likelihood_ratio']['hi']:.2f}]")
+            else:
+                lines.append(f"  {lvl}: {_fmt(v)}")
     lines.append("\nCalibration (same questions where each forecast exists):")
     lines.append(res["calibration"].round(3).to_string())
     if res["heterogeneity"] is not None:
@@ -281,6 +328,7 @@ def main(argv=None):
     res["calibration"].to_csv(outdir / "calibration.csv")
     res["wide"].to_csv(outdir / "per_question.csv")
     plots(res, outdir)
+    dose_plot(res, outdir)
 
 
 if __name__ == "__main__":

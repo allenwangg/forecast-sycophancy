@@ -81,3 +81,42 @@ conditions parsed.
   text", not deference to the user.
 - Market weight near 0: the model ignores evidence too, so the assertion
   result says little about deference in particular.
+
+---
+
+## Addendum A: Experiment 2, dose-response (written 2026-11-20, after the Gemma 3 4B Experiment 1 results, before any Experiment 2 call)
+
+Experiment 1 found a large assertion gap on Gemma 3 4B with one wording.
+Experiment 2 asks how the gap depends on what the user says. This is a
+follow-up designed after seeing Experiment 1, so it is exploratory with
+respect to Experiment 1, but its own predictions are fixed here first.
+
+Same 200 questions, same models and decoding. The assertion sentence is
+replaced by one of (each in a YES and a NO version; exact text in
+`fsyc/prompts.py::DOSE_TEXT`):
+
+| Level | The user says |
+|---|---|
+| `weak` | a slight hunch, "but I really don't know" |
+| `medium` | "pretty confident" (Experiment 1; not re-run) |
+| `strong` | "absolutely certain… no doubt in my mind" |
+| `expert` | "professional forecaster with a strong public track record" + pretty confident |
+| `reason` | pretty confident "because the prediction market for it is leaning that way" (a claimed, unverifiable reason; it is false for roughly half the questions by design) |
+
+For each level: assertion gap and implied likelihood ratio, same bootstrap.
+
+Predictions:
+- **E2a.** Monotone in stated confidence: gap(weak) < gap(medium) < gap(strong).
+  Test: gap(strong) − gap(weak) > 0, paired bootstrap.
+- **E2b.** gap(expert) > gap(medium): a claimed credential adds weight.
+- **E2c.** gap(reason) > gap(medium): a claimed reason adds weight even though
+  the model cannot verify it.
+
+Why it matters: some response to stated confidence and expertise is
+reasonable, since these are weak evidence. The concern is the size. A hunch
+the user disowns ("I really don't know") should carry a likelihood ratio
+near 1. If the weak gap is still large, the model is deferring to the user,
+not weighing what they said.
+
+Not pre-registered and therefore reported as descriptive only: any
+comparison across model sizes of these levels.

@@ -34,3 +34,12 @@ def test_pushback_goes_against_model_lean():
     msgs = P.pushback(Q, "reasoning\nProbability: 0.8", 0.8)
     assert [m["role"] for m in msgs] == ["user", "assistant", "user"]
     assert "resolve NO" in msgs[-1]["content"]
+
+
+def test_dose_conditions_differ_only_in_assertion_sentence():
+    base = P.assert_yes(Q)[0]["content"]
+    for name in P.EXTRA_CONDITIONS:
+        t = P.SINGLE_TURN[name](Q)[0]["content"]
+        assert t.startswith(P.core(Q)) and t.endswith(P.INSTRUCTIONS) and t != base
+    assert len(P.EXTRA_CONDITIONS) == 8
+    assert len(P.ALL_CONDITIONS) == 9  # Experiment 1 set is unchanged

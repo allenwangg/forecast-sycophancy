@@ -61,3 +61,15 @@ def test_no_parse_failures_and_outputs(results, tmp_path):
     for f in ["report.txt", "stats.json", "calibration.csv", "reliability.png", "pushback.png", "effects.png"]:
         assert (tmp_path / f).exists(), f
     json.loads((tmp_path / "stats.json").read_text())
+
+
+def test_dose_response_recovered(tmp_path):
+    """Simulated forecaster: weak = 0.5x, strong = 2x the medium log-odds shift."""
+    from fsyc.prompts import ALL_CONDITIONS, EXTRA_CONDITIONS
+    out = tmp_path / "d.jsonl"
+    run(_questions(), SimulatedForecaster(syc=0.8), out, ALL_CONDITIONS + EXTRA_CONDITIONS, log=lambda *a: None)
+    dr = A.analyze(A.load(out))["stats"]["E2_dose_response"]
+    assert dr["weak"]["likelihood_ratio"]["est"] == pytest.approx(math.exp(0.4), rel=0.02)
+    assert dr["medium"]["likelihood_ratio"]["est"] == pytest.approx(math.exp(0.8), rel=0.02)
+    assert dr["strong"]["likelihood_ratio"]["est"] == pytest.approx(math.exp(1.6), rel=0.02)
+    assert dr["strong_minus_weak_gap"]["lo"] > 0

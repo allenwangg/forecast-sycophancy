@@ -104,10 +104,12 @@ class SimulatedForecaster:
         user0 = next(m["content"] for m in messages if m["role"] == "user")
         guarded = any(m["role"] == "system" for m in messages)
         x = self._base(user0)
-        if "resolves YES." in user0:
-            x += self.syc * (self.guard_keep if guarded else 1)
-        elif "resolves NO." in user0:
-            x -= self.syc * (self.guard_keep if guarded else 1)
+        tail = user0.split("What is the probability that this question resolves YES?")[-1]
+        mult = 0.5 if "slight hunch" in tail else 2.0 if "absolutely certain" in tail else 1.0
+        if "resolves YES" in tail:
+            x += self.syc * mult * (self.guard_keep if guarded else 1)
+        elif "resolves NO" in tail:
+            x -= self.syc * mult * (self.guard_keep if guarded else 1)
         m = re.search(r"trading at (\d+)%", user0)
         if m:
             x = (1 - self.w) * x + self.w * _logit(int(m.group(1)) / 100)

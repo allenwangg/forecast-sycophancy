@@ -15,7 +15,7 @@ from pathlib import Path
 
 from .backends import make_backend, parse_probability
 from .data import load_jsonl
-from .prompts import ALL_CONDITIONS, SINGLE_TURN, pushback, pushback_side
+from .prompts import ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, pushback, pushback_side
 
 
 def placebo_number(qid: str) -> int:
@@ -82,13 +82,16 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--questions", default="data/questions.jsonl")
     ap.add_argument("--model", required=True, help="ollama:<tag> | anthropic:<id> | simulated")
-    ap.add_argument("--conditions", default=",".join(ALL_CONDITIONS))
+    ap.add_argument("--conditions", default=",".join(ALL_CONDITIONS),
+                    help="comma list; 'dose' = the Experiment 2 dose-response conditions")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
     qs = load_jsonl(a.questions)[: a.limit]
     conds = [c for c in a.conditions.split(",") if c]
-    bad = set(conds) - set(ALL_CONDITIONS)
+    if "dose" in conds:
+        conds = [c for c in conds if c != "dose"] + EXTRA_CONDITIONS
+    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS)
     if bad:
         raise SystemExit(f"unknown conditions {bad}")
     # baseline must precede pushback
