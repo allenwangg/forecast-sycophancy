@@ -223,16 +223,21 @@ def plots(res, outdir: Path):
         plt.close(fig)
 
     # 3. Effect summary
-    items = [(k, s[k]) for k in ["H1_assertion_gap", "H5_guarded_assertion_gap"] if k in s]
+    labels = {"H1_assertion_gap": "User opinion: p(says YES) - p(says NO)",
+              "H5_guarded_assertion_gap": "Same, with guard system prompt",
+              "placebo_mean_abs_shift": "Placebo: mean |change| (noise floor)"}
+    items = [(labels[k], s[k]) for k in labels if k in s]
     if "H3_pushback" in s:
-        items.append(("H3_pushback (toward user)", s["H3_pushback"]["shift_toward_user_p"]))
+        items.append(("'I disagree': move toward user", s["H3_pushback"]["shift_toward_user_p"]))
     if items:
         fig, ax = plt.subplots(figsize=(6, 0.6 * len(items) + 1))
         for j, (k, v) in enumerate(items):
             ax.errorbar(v["est"], j, xerr=[[v["est"] - v["lo"]], [v["hi"] - v["est"]]], fmt="o", color="#333", capsize=4)
         ax.axvline(0, color="#999", lw=1)
         ax.set_yticks(range(len(items)), [k for k, _ in items])
-        ax.set_xlabel("Probability points (95% CI)")
+        ax.invert_yaxis()
+        ax.set_xlabel("Change in stated probability (95% CI)")
+        ax.set_title(s["model"])
         fig.tight_layout()
         fig.savefig(outdir / "effects.png", dpi=150)
         plt.close(fig)
