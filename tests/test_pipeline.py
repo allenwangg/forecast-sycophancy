@@ -83,3 +83,24 @@ def test_parallel_run_matches_sequential(tmp_path):
     ra = {key(r): r["p"] for r in map(json.loads, a.read_text().splitlines())}
     rb = {key(r): r["p"] for r in map(json.loads, b.read_text().splitlines())}
     assert ra == rb and len(ra) == 30 * 9
+
+
+def test_informed_user_recovered(tmp_path):
+    """Simulated forecaster moves 70% of the way (log-odds) to a cited price."""
+    from fsyc.prompts import ALL_CONDITIONS
+    out = tmp_path / "i.jsonl"
+    run(_questions(), SimulatedForecaster(w_informed=0.7), out, ALL_CONDITIONS + ["pushback_informed"],
+        log=lambda *a: None)
+    s = A.analyze(A.load(out))["stats"]["E3_informed_user"]
+    assert s["weight_on_cited_price"]["est"] == pytest.approx(0.7, abs=0.05)
+    assert s["move_toward_user_p"]["lo"] > 0
+    assert "informed_minus_bare_move" in s
+
+
+def test_informed_side_and_text():
+    from fsyc import prompts as P
+    assert P.informed_side(0.2, 0.6) == "YES" and P.informed_side(0.8, 0.6) == "NO"
+    assert P.informed_side(0.6, 0.602) is None
+    q = {"market_price": 0.6, "freeze_date": "2026-01-01"}
+    t = P.informed_text(q, 0.8)
+    assert "less likely" in t and "60%" in t and "2026-01-01" in t

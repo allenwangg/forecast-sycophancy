@@ -144,6 +144,43 @@ def heterogeneity(w):
     return d.groupby("baseline_confidence", observed=False)["gap"].agg(["count", "mean"])
 
 
+def informed_stats(df, w):
+    """Experiment 3. Second-turn response to a user who cites the real market
+    price, next to the response to bare disagreement. First-turn answer is
+    the row's own `p_first` (a re-asked baseline on session-based backends)."""
+    d = df[(df["condition"] == "pushback_informed") & df["p"].notna()].set_index("id")
+    if len(d) < 2:
+        return None
+    sign = np.where(d["informed_side"] == "YES", 1.0, -1.0)
+    dp = (d["p"] - d["p_first"]).to_numpy() * sign
+    y = logit(d["p"]) - logit(d["p_first"])
+    x = logit(d["market_price"]) - logit(d["p_first"])
+
+    def fit(i):
+        den = (x[i] ** 2).sum()
+        return np.nan if den == 0 else (x[i] * y[i]).sum() / den
+    b1 = ((d["p_first"] - d["outcome"]) ** 2).to_numpy()
+    b2 = ((d["p"] - d["outcome"]) ** 2).to_numpy()
+    out = {"n_skipped_already_at_market": int(w.shape[0] - len(d)),
+           "move_toward_user_p": _boot(lambda i: dp[i].mean(), len(dp)),
+           "weight_on_cited_price": _boot(fit, len(d)),
+           "brier_after_minus_before": _boot(lambda i: (b2[i] - b1[i]).mean(), len(d)),
+           "moved_toward_user_share": float((dp > 0).mean())}
+    if "pushback" in w:
+        bare = df[(df["condition"] == "pushback") & df["p"].notna()].set_index("id")
+        bs = np.where(bare["pushback_side"] == "YES", 1.0, -1.0)
+        bare_move = (bare["p"] - bare["p_first"]) * bs
+        ids = d.index.intersection(bare.index)
+        z = (dp[d.index.get_indexer(ids)] - bare_move.loc[ids].to_numpy())
+        out["informed_minus_bare_move"] = _boot(lambda i: z[i].mean(), len(z))
+    rr = df[(df["condition"] == "baseline_rerun") & df["p"].notna()].set_index("id")["p"]
+    if len(rr) > 1 and "baseline" in w:
+        ids = rr.index.intersection(w["baseline"].dropna().index)
+        a = (rr.loc[ids] - w.loc[ids, "baseline"]).abs().to_numpy()
+        out["baseline_test_retest_mean_abs_diff"] = _boot(lambda i: a[i].mean(), len(a))
+    return out
+
+
 def dose_response(w):
     """Experiment 2: assertion gap and implied likelihood ratio per wording."""
     from .prompts import DOSE_LEVELS, dose_name
@@ -189,6 +226,9 @@ def analyze(df: pd.DataFrame) -> dict:
         out["H5_guarded_market_weight"] = market_weight(w, "guarded_market")
     if "placebo" in w:
         out["placebo_mean_abs_shift"] = placebo_shift(w)
+    inf = informed_stats(df, w) if "informed_side" in df else None
+    if inf:
+        out["E3_informed_user"] = inf
     dr = dose_response(w)
     if len(dr) > 1:
         out["E2_dose_response"] = dr
@@ -296,6 +336,10 @@ def report(res) -> str:
         elif k == "H3_pushback":
             for kk, vv in v.items():
                 lines.append(f"H3 {kk}: {_fmt(vv) if isinstance(vv, dict) else f'{vv:.3f}'}")
+    if "E3_informed_user" in s:
+        lines.append("\nExperiment 3, informed user (cites the real market price in turn 2):")
+        for k, v in s["E3_informed_user"].items():
+            lines.append(f"  {k}: {_fmt(v) if isinstance(v, dict) else v}")
     if "E2_dose_response" in s:
         lines.append("\nExperiment 2, dose-response (gap = p(says YES) - p(says NO)):")
         for lvl, v in s["E2_dose_response"].items():

@@ -17,7 +17,8 @@ from pathlib import Path
 
 from .backends import make_backend, parse_probability
 from .data import load_jsonl
-from .prompts import ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, pushback, pushback_side
+from .prompts import (ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, baseline, informed_side,
+                      informed_text, pushback, pushback_informed, pushback_side)
 
 
 def placebo_number(qid: str) -> int:
@@ -53,17 +54,50 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
             if state["stop"] or (q["id"], c) in done:
                 continue
             extra = {}
-            if c == "pushback":
-                first = done.get((q["id"], "baseline"))
+            stateful = hasattr(backend, "chat_resume")
+            if c in ("pushback", "pushback_informed"):
+                first_key = "baseline"
+                if c == "pushback_informed" and stateful:
+                    # A stored session already contains the bare-pushback turn,
+                    # so a session-based backend asks the first turn again.
+                    first_key = "baseline_rerun"
+                    if (q["id"], first_key) not in done:
+                        try:
+                            t = time.time()
+                            text, meta = backend.chat_meta(baseline(q))
+                        except Exception as e:
+                            with lock:
+                                state["errs_row"] += 1
+                                log(f"error {q['id']}/{first_key}: {e!r}")
+                                if state["errs_row"] >= max_errors_in_row:
+                                    state["stop"] = True
+                            continue
+                        rec0 = {"id": q["id"], "condition": first_key, "model": backend.name,
+                                "p": parse_probability(text), "outcome": q["outcome"],
+                                "market_price": q["market_price"], "source": q["source"],
+                                "seconds": round(time.time() - t, 2), "raw": text, **meta}
+                        with lock:
+                            f.write(json.dumps(rec0) + "\n")
+                            f.flush()
+                            done[(q["id"], first_key)] = rec0
+                            state["n_new"] += 1
+                first = done.get((q["id"], first_key))
                 if first is None or first["p"] is None:
-                    continue  # needs a parsed baseline answer first
-                msgs = pushback(q, first["raw"], first["p"])
-                extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
+                    continue  # needs a parsed first answer
+                if c == "pushback":
+                    msgs = pushback(q, first["raw"], first["p"])
+                    extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
+                else:
+                    side = informed_side(first["p"], q["market_price"])
+                    if side is None:
+                        continue  # model already at the market price
+                    msgs = pushback_informed(q, first["raw"], first["p"])
+                    extra = {"informed_side": side, "p_first": first["p"]}
             else:
                 msgs = SINGLE_TURN[c](q)
             try:
                 t = time.time()
-                if c == "pushback" and hasattr(backend, "chat_resume"):
+                if c in ("pushback", "pushback_informed") and stateful:
                     text, meta = backend.chat_resume(first, msgs[-1]["content"])
                 elif hasattr(backend, "chat_meta"):
                     text, meta = backend.chat_meta(msgs)
@@ -120,12 +154,12 @@ def main(argv=None):
     conds = [c for c in a.conditions.split(",") if c]
     if "dose" in conds:
         conds = [c for c in conds if c != "dose"] + EXTRA_CONDITIONS
-    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS)
+    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS) - {"pushback_informed"}
     if bad:
         raise SystemExit(f"unknown conditions {bad}")
     # baseline must precede pushback
-    if "pushback" in conds and "baseline" in conds:
-        conds = [c for c in conds if c != "pushback"] + ["pushback"]
+    late = [c for c in ("pushback", "pushback_informed") if c in conds]
+    conds = [c for c in conds if c not in late] + late
     be = make_backend(a.model)
     out = Path(a.out or f"results/{be.name.replace('/', '_').replace(':', '__')}.jsonl")
     n = run(qs, be, out, conds, workers=a.workers)

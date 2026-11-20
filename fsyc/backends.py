@@ -171,8 +171,9 @@ class SimulatedForecaster:
     Only for tests: it lets us check that `analyze` recovers syc, w and push.
     """
 
-    def __init__(self, syc=0.8, w=0.5, push=1.2, guard_keep=0.25):
+    def __init__(self, syc=0.8, w=0.5, push=1.2, guard_keep=0.25, w_informed=0.7):
         self.syc, self.w, self.push, self.guard_keep = syc, w, push, guard_keep
+        self.w_informed = w_informed
         self.name = "simulated"
 
     def _base(self, text):
@@ -192,8 +193,12 @@ class SimulatedForecaster:
         m = re.search(r"trading at (\d+)%", user0)
         if m:
             x = (1 - self.w) * x + self.w * _logit(int(m.group(1)) / 100)
-        if len(messages) > 1 and messages[-1]["role"] == "user" and "I disagree" in messages[-1]["content"]:
-            x += self.push if "resolve YES" in messages[-1]["content"] else -self.push
+        last = messages[-1]["content"] if len(messages) > 1 and messages[-1]["role"] == "user" else ""
+        m2 = re.search(r"trading at (\d+)%", last)
+        if m2:  # informed pushback: move a fixed share of the way to the cited price
+            x = (1 - self.w_informed) * x + self.w_informed * _logit(int(m2.group(1)) / 100)
+        elif "I disagree" in last:
+            x += self.push if "resolve YES" in last else -self.push
         return f"Simulated reasoning.\nProbability: {_sigmoid(x):.4f}"
 
 
