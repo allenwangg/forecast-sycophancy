@@ -1,19 +1,29 @@
 {
   "model": "claude-code:opus",
   "n_questions": 200,
-  "rows": 2190,
+  "rows": 4179,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
     "baseline": 0,
     "baseline_rerun": 0,
+    "baseline_rerun2": 0,
+    "dose_expert_no": 0,
+    "dose_expert_yes": 0,
+    "dose_reason_no": 0,
+    "dose_reason_yes": 0,
+    "dose_strong_no": 0,
+    "dose_strong_yes": 0,
+    "dose_weak_no": 0,
+    "dose_weak_yes": 0,
     "guarded_assert_no": 0,
     "guarded_assert_yes": 0,
     "guarded_market": 0,
     "market": 0,
     "placebo": 0,
     "pushback": 0,
-    "pushback_informed": 0
+    "pushback_informed": 0,
+    "pushback_misinformed": 0
   },
   "H1_assertion_gap": {
     "est": 0.078075,
@@ -128,6 +138,106 @@
       "est": 0.039325,
       "lo": 0.031150000000000008,
       "hi": 0.04855062499999999,
+      "n": 200
+    }
+  },
+  "E4_misinformed_user": {
+    "move_toward_false_quote_p": {
+      "est": 0.0924973544973545,
+      "lo": 0.08061322751322753,
+      "hi": 0.10545026455026454,
+      "n": 189
+    },
+    "weight_on_false_price": {
+      "est": 0.6334258168700272,
+      "lo": 0.5973787928269262,
+      "hi": 0.6676875121681686,
+      "n": 189
+    },
+    "brier_after_minus_before": {
+      "est": 0.07720859259259259,
+      "lo": 0.056648031746031745,
+      "hi": 0.09949736097883595,
+      "n": 189
+    },
+    "moved_toward_false_quote_share": 1.0,
+    "unchanged_share": 0.0
+  },
+  "E2_dose_response": {
+    "weak": {
+      "gap": {
+        "est": 0.0181,
+        "lo": 0.011450000000000002,
+        "hi": 0.024901249999999982,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.0750543915673922,
+        "lo": 1.0510995626816797,
+        "hi": 1.1007093117153426,
+        "n": 200
+      }
+    },
+    "medium": {
+      "gap": {
+        "est": 0.078075,
+        "lo": 0.065725,
+        "hi": 0.09130124999999997,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.3050785989403304,
+        "lo": 1.262805736179024,
+        "hi": 1.352558090133707,
+        "n": 200
+      }
+    },
+    "strong": {
+      "gap": {
+        "est": 0.049975000000000006,
+        "lo": 0.04074749999999999,
+        "hi": 0.059450624999999986,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.2003050462491072,
+        "lo": 1.164900380075375,
+        "hi": 1.2364605033690572,
+        "n": 200
+      }
+    },
+    "expert": {
+      "gap": {
+        "est": 0.06695000000000001,
+        "lo": 0.05614937500000001,
+        "hi": 0.078475,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.2576133096543576,
+        "lo": 1.217787010234809,
+        "hi": 1.2989222815246302,
+        "n": 200
+      }
+    },
+    "reason": {
+      "gap": {
+        "est": 0.10074999999999999,
+        "lo": 0.08739874999999998,
+        "hi": 0.11410000000000001,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.377720878383658,
+        "lo": 1.322816823289965,
+        "hi": 1.436464839495061,
+        "n": 200
+      }
+    },
+    "strong_minus_weak_gap": {
+      "est": 0.031874999999999994,
+      "lo": 0.022424374999999996,
+      "hi": 0.041999999999999996,
       "n": 200
     }
   }

@@ -12,6 +12,58 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
+## What the experiments add up to
+
+The question is not "does the model change its answer when the user
+pushes". A good forecaster should change its answer for information and
+not for pressure, so the quantity of interest is **what a model treats as
+information**. Each experiment varies one thing the user supplies:
+
+| What the user supplies | gemma3:4b | gemma3:12b | Opus 5.5 | Fable 5.2 |
+|---|---|---|---|---|
+| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.08 | 0.02 |
+| More certainty ("absolutely certain"): gap | 0.76 | pending | 0.05 | 0.02 |
+| A claimed track record: gap | 0.42 | pending | 0.07 | 0.01 |
+| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.02 | 0.00 |
+| A reason with no number ("the market leans that way"): gap | 0.49 | pending | 0.10 | 0.09 |
+| The real market price, in the prompt: weight | 0.59 | 0.93 | 0.86 | 0.85 |
+| The real market price, from the user in turn 2: weight | pending | pending | 0.69 | 0.33 |
+| A false market price, from the user in turn 2: weight | not run | not run | 0.63 | 0.51 |
+
+Gemma and Claude columns use different question sets and the Claude
+models ran through a product harness, so compare patterns down a column,
+not numbers across the two halves.
+
+What this supports:
+
+1. **Two different failure modes.** The small models respond to social
+   signal: confidence and repetition move them, a stated reason adds
+   nothing. The two Claude models are close to immune to social signal
+   (certainty, credentials and bare disagreement move them by 0 to 8
+   points) and respond to stated reasons.
+2. **Resisting pressure is not the same as weighing evidence.** The Claude
+   models' sensitivity to reasons does not depend on the reason being
+   true. A fabricated market price moved both about as much as a real one
+   and cost about 0.07 to 0.08 Brier. For these models the exposure is
+   not flattery, it is unverifiable claims phrased as evidence.
+3. **The least sycophantic model is not the best-calibrated truster.**
+   Fable 5.2 is the hardest to push, but it under-uses a true quote and
+   does not discount a false one, so it needs a more honest user
+   population than Opus 5.5 for user-supplied evidence to pay.
+4. **A system prompt fixes the first failure and was not tested on the
+   second.** The one-paragraph guard cuts Gemma's opinion gap to about
+   0.05. It tells the model to update on "data or market prices", which
+   is exactly the channel Experiment 4 exploits.
+
+What it does not establish: that any of this holds outside binary
+forecasting questions, in the bare models without the Claude Code harness,
+with other wordings, or with tools that let a model check a quote. It does
+not show the Claude models have forecasting skill (their Brier scores are
+not distinguishable from always-50%). It measures stated probabilities
+only; whether pressure changes an internal estimate or just the reported
+one needs access to activations. Several pre-registered predictions failed
+across the experiments; each is marked where it occurs.
+
 ## Results: Gemma 3 4B and 12B, Claude Opus 5.5 and Fable 5.2 (27B running)
 
 Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
@@ -188,6 +240,64 @@ differs from the original by 0.035 to 0.04 on average (non-greedy
 decoding), which is smaller than both informed moves but larger than
 Fable's bare move. One run per question. Gemma 3 4B and 12B versions are
 queued.
+
+### Experiment 4: the misinformed user (Claude Opus 5.5 and Fable 5.2, n = 200)
+
+Experiment 3 showed both models move for a user who cites the real market
+price, while saying they cannot verify it. This is the cost side: the same
+sentence with a **false** price, the true price reflected through the
+model's own first answer (so it points the wrong way). Pre-registered in
+[Addendum E](PREREGISTRATION.md) before any call.
+
+| | Opus 5.5 | Fable 5.2 |
+|---|---|---|
+| Questions used | 189 | 182 |
+| Share of answers that moved toward the false quote | 100% | 99% |
+| Mean move toward the false quote | 0.09 [0.08, 0.11] | 0.09 [0.07, 0.10] |
+| Weight on the false price | 0.63 [0.60, 0.67] | 0.51 [0.45, 0.56] |
+| Weight on the true price (Experiment 3) | 0.69 [0.63, 0.75] | 0.33 [0.28, 0.39] |
+| Brier, turn 1 → turn 2 | 0.262 → 0.339 | 0.244 → 0.318 |
+| Brier change | +0.08 [+0.06, +0.10] | +0.07 [+0.05, +0.10] |
+
+- **Neither model resists a false quote.** Both moved toward it in
+  essentially every case and both ended worse than always answering 50%.
+  A model that holds firm against "I disagree" in 199 of 200 cases
+  (Fable) follows a made-up number in 181 of 182.
+- **Predictions.** Opus weight on the false price within 0.15 of its
+  weight on the true one: held (0.63 vs 0.69). Same for Fable: **failed**,
+  and in the direction I did not expect: Fable put *more* weight on the
+  false price (0.51) than on the true one (0.33). Brier gets worse for
+  both: held. Worse for Opus than Fable: **not found** (+0.08 vs +0.07).
+- **Fable's caution bought nothing here.** It gains less than Opus from a
+  true quote (Brier −0.04 vs −0.10) and loses the same from a false one.
+  Descriptive break-even: citing a price to these models helps on net
+  only if at least about 44% of such users are truthful for Opus and
+  about 63% for Fable (loss / (loss + gain); the false quotes were on
+  average closer to the model's answer than the true ones, 0.12 vs 0.19
+  to 0.22, because of clipping, so the two sides are not symmetric).
+
+**Exploratory, not pre-registered: why more weight on the false quote?**
+By construction the false quote more often pushes the model further in the
+direction it already leans (away from 50%: 68 to 72% of false quotes, 40
+to 46% of true ones). Pooling Experiments 3 and 4 and regressing the
+fraction of the distance moved on distance, direction and truth:
+
+| Fraction of distance moved | Opus 5.5 | Fable 5.2 |
+|---|---|---|
+| Quote pushes toward 50% rather than away | −0.10 [−0.15, −0.05] | −0.16 [−0.20, −0.11] |
+| Per unit of distance between quote and own answer | +0.10 [−0.06, +0.26] | −0.34 [−0.49, −0.18] |
+| Quote is false (after the two controls) | +0.05 [+0.01, +0.10] | +0.16 [+0.11, +0.20] |
+
+Both models move further for a quote that says "you leaned the right way,
+go further" than for one that says "you leaned too far", and Fable
+discounts quotes that are far from its own answer. Those are properties
+of how the quote relates to the model's prior, not of whether it is true.
+A residual "false" effect remains for Fable that these controls do not
+explain; truth and direction are confounded in this design, the two
+experiments used separately re-asked first turns, and I would not read
+the residual as the model preferring false quotes. The clean follow-up
+randomizes the direction and distance of the quote independently of
+truth.
 
 ### Experiment 2: dose-response on Gemma 3 4B
 
@@ -369,7 +479,7 @@ against ground truth before they are used on a real model.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                       # 35 tests, no network, no model
+python -m pytest -q                       # 37 tests, no network, no model
 ollama pull gemma3:4b && ollama pull gemma3:12b
 bash scripts/reproduce.sh                 # data snapshot -> runs -> reports
 ```
@@ -454,9 +564,10 @@ effect that matters, which is whether it also stops the model using evidence.
    (dose-response, pre-registered in Addendum A) is also running.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
-3. Experiment 3 on the Gemma models (queued), and a version where the
-   user's cited "evidence" is false, to test whether the caution Fable 5.2
-   shows toward an unverifiable quote is discrimination or a flat discount.
+3. Experiments 3 and 4 on the Gemma models (Experiment 3 queued), and a
+   version of Experiment 4 that randomizes the direction and distance of
+   the quote independently of whether it is true. Then the same with a
+   search tool, to see whether a model that can check a quote does.
 4. Mechanism: a linear probe on hidden states for "the model's answer before
    the user spoke". Does pressure change the internal estimate, or only the
    stated one? That separates a model that is persuaded from one that is
