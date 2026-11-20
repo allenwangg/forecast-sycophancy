@@ -333,3 +333,15 @@ Predictions:
 - If either model discriminates (weight on the false price clearly lower
   than on the true one), that is the more interesting result and the
   replies will be read to see how.
+
+**Note added 2026-11-20, after the Claude Experiment 4 result, before any
+Gemma `pushback_misinformed` call.** Experiment 4 is also run on Gemma 3
+4B and 12B (200 questions of `data/questions.jsonl`, greedy, reusing the
+stored baseline answer as the first turn, so Experiments 3 and 4 share
+the same first answer and are exactly paired for these models).
+Predictions: each model's weight on the false price is within 0.15 of its
+weight on the true price in Experiment 3; Brier gets worse for both. With
+a shared first turn, the true-versus-false comparison at matched distance
+is cleaner here than for the Claude route, and the exploratory direction
+analysis from the README is repeated as a pre-stated check: the
+"toward 50%" coefficient is negative.
