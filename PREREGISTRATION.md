@@ -175,3 +175,12 @@ result replaces the n = 100 one; both are never cherry-picked between.
 **Pilot rule.** A 10-question pilot is run first to check that answers
 parse and to see how much of the usage limit a call takes. No paid API
 calls are made.
+
+**Note added 2026-11-20 after the 10-question pilot, before the remaining
+90 questions finished and before any analysis.** The run was made from a
+cloud Claude Code session (CLI 2.1.329), not the laptop. The pilot showed:
+served model `claude-opus-5-5` on all 90 calls, 0 parse failures, and the
+CLI reports about 4,300 input tokens of harness context per call that are
+not part of my prompt and that I cannot inspect. That hidden context is the
+main caveat on this result. The pilot's 10 questions are the first 10 of
+the 100 and their rows are kept, not re-run.
