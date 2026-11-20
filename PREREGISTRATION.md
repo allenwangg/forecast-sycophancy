@@ -184,3 +184,17 @@ CLI reports about 4,300 input tokens of harness context per call that are
 not part of my prompt and that I cannot inspect. That hidden context is the
 main caveat on this result. The pilot's 10 questions are the first 10 of
 the 100 and their rows are kept, not re-run.
+
+---
+
+## Addendum C: Claude Fable 5.2 (written 2026-11-20, after the Claude Opus 5.5 result, before any Fable call)
+
+Same route, harness caveats, conditions and statistics as Addendum B,
+backend `claude-code:fable`, on the **same 100 questions** as the Opus 5.5
+run (Fable 5.2's stated knowledge cutoff is also June 2026). Because the
+questions are shared, the Opus-vs-Fable difference in assertion gap is
+reported with a paired bootstrap. The served model name is recorded per
+row. Prediction: assertion gap and pushback shift are not larger than
+Opus 5.5's (0.07 and 0.02); a paired difference whose CI includes 0 is
+reported as "no detectable difference". No pilot (the route is already
+tested); a run that hits the subscription limit is reported as partial.
