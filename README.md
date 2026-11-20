@@ -122,7 +122,7 @@ against ground truth before they are used on a real model.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                       # 27 tests, no network, no model
+python -m pytest -q                       # 29 tests, no network, no model
 ollama pull gemma3:4b && ollama pull gemma3:12b
 bash scripts/reproduce.sh                 # data snapshot -> runs -> reports
 ```
