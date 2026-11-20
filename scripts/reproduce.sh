@@ -12,7 +12,7 @@ python -m fsyc.data --download-since 2025-03-01 --max-file-date 2026-11-08 \
 echo "expected sha256 03b7bc30767eec4759e087910de50d6f5438d37d3319684abf2b57fbf74961c2"
 shasum -a 256 data/questions.jsonl 2>/dev/null || sha256sum data/questions.jsonl
 # 2. Runs (resumable). Greedy decoding, one answer per question x condition.
-for m in ${MODELS:-gemma3:4b gemma3:12b}; do
+for m in ${MODELS:-gemma3:4b gemma3:12b gemma3:27b}; do
   python -m fsyc.run --model "ollama:$m"
   python -m fsyc.analyze "results/ollama__${m//:/__}.jsonl" --outdir "results/ollama__${m//:/__}"
 done

@@ -12,7 +12,57 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
-## Results so far: Gemma 3 4B (12B run in progress)
+## Results: Gemma 3 4B and 12B (27B and Experiment 2 running)
+
+Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
+failures. Brackets are 95% paired bootstrap CIs over questions.
+
+| | gemma3:4b | gemma3:12b |
+|---|---|---|
+| Opinion gap, p(says YES) − p(says NO) | 0.48 [0.44, 0.52] | 0.24 [0.21, 0.27] |
+| Implied likelihood ratio of one opinion | 3.54 [3.15, 3.97] | 1.86 [1.73, 2.01] |
+| "I disagree": mean move toward user | 0.30 [0.28, 0.32] | 0.23 [0.22, 0.24] |
+| "I disagree": answers crossing 50% (%) | 74 [68, 80] | 46 [38, 52] |
+| Weight on real market price (0 to 1) | 0.59 [0.50, 0.67] | 0.93 [0.88, 0.96] |
+| Brier change when user is wrong | +0.26 [0.22, 0.30] | +0.12 [0.10, 0.15] |
+| Opinion gap with guard prompt | 0.04 [0.02, 0.07] | 0.05 [0.03, 0.06] |
+| Market weight with guard prompt | 0.67 [0.60, 0.74] | 0.92 [0.89, 0.96] |
+| Placebo: mean absolute change | 0.12 [0.10, 0.14] | 0.06 [0.05, 0.08] |
+| Baseline Brier (always-50% = 0.250) | 0.302 | 0.279 |
+| Baseline AUROC | 0.53 | 0.62 |
+
+**What changes with scale (4B → 12B).**
+
+- The opinion gap halves: 0.48 → 0.24, a paired difference of
+  **−0.24 [−0.28, −0.19]**. The larger model also weighs real evidence far
+  more (market weight 0.59 → 0.93). So the ratio the design was built to
+  measure, evidence versus opinion, moves in the right direction on both
+  sides.
+- It does not go away. On 12B a single unexplained opinion still acts like
+  evidence with a likelihood ratio of 1.9, and "I disagree" with no new
+  information moved **every one of the 200 answers** toward the user (by
+  0.23 on average) and flipped 46% of them across 50%.
+- The 12B deference is asymmetric. Its baseline leans NO (mean 0.35). A user
+  saying YES raises it by 0.18 on average; a user saying NO lowers it by
+  only 0.07. (4B: +0.21 and −0.27.) This asymmetry was not pre-registered
+  and is descriptive.
+- The guard prompt takes both models to the same small gap (0.04 and 0.05)
+  and leaves the market weight unchanged on both.
+- Skill is still weak. 12B's baseline Brier (0.279) remains worse than
+  always saying 50%, though its ranking of questions is better (AUROC 0.62
+  vs 0.53). With the market price in the prompt, 12B nearly matches the
+  market (0.143 vs 0.136).
+
+This is two models from one family. It is not evidence about a general
+trend with scale. The 27B run adds a third point. Perez et al. (2022) found
+sycophancy on opinion questions *increasing* with model size, so the
+direction here should be read as specific to this family and task until
+shown otherwise.
+
+Tables and CIs: [`results/comparison.md`](results/comparison.md), from
+`python -m fsyc.compare`.
+
+### Gemma 3 4B in detail
 
 200 questions × 9 conditions = 1,800 calls, 0 parse failures. 95% paired
 bootstrap CIs over questions. Full output:
@@ -58,8 +108,7 @@ questions. Baseline Brier is 0.302 and AUROC 0.53, worse than always saying
 50% (0.250) and far worse than the market price itself (0.136). Pushback
 *lowers* its Brier (0.248) because it pulls overconfident answers back
 toward 50%, not because it helps. Read the results as "how this model handles
-pressure", not "how good a forecaster it is". The 12B run tests whether
-both skill and sycophancy change with scale.
+pressure", not "how good a forecaster it is".
 
 | Forecast | Brier | Log loss | ECE | AUROC |
 |---|---|---|---|---|
@@ -138,6 +187,7 @@ produced.
 | `fsyc/backends.py` | Ollama, Claude API, simulated forecaster; probability parser |
 | `fsyc/run.py` | Questions × conditions → JSONL, resumable |
 | `fsyc/analyze.py` | Pre-registered statistics, tables, figures |
+| `fsyc/compare.py` | Side-by-side models, paired difference in opinion gap |
 | `fsyc/metrics.py` | Brier, log loss, ECE, Murphy decomposition, AUROC, bootstrap |
 
 ## Related work, and what this adds
@@ -174,8 +224,8 @@ effect that matters, which is whether it also stops the model using evidence.
 
 - **Small model, little skill.** Gemma 3 4B forecasts worse than always answering 50%
   here, so its "beliefs" are weak to begin with, and weak beliefs may be
-  easier to push. The 12B run (same questions and prompts) is the first
-  check on scale. Frontier models are not tested; `fsyc/backends.py` has a
+  easier to push. 12B has somewhat more skill and defers about half as
+  much, which fits that reading; neither beats always-50% unaided. Frontier models are not tested; `fsyc/backends.py` has a
   Claude backend ready, but no API key was available for this project.
 - **One wording per condition.** Each condition is a single phrasing. The
   effect size depends on wording ("pretty confident" vs. "certain", with or
@@ -200,8 +250,8 @@ effect that matters, which is whether it also stops the model using evidence.
 
 ## Next steps
 
-1. Gemma 3 12B (running) and 27B: does sycophancy shrink with scale while
-   skill grows?
+1. Gemma 3 27B (running): a third point on scale. Experiment 2
+   (dose-response, pre-registered in Addendum A) is also running.
 2. Claude models through the API, same 200 questions.
 3. Dose-response: vary assertion strength and claimed expertise.
 4. Mechanism: a linear probe on hidden states for "the model's answer before
