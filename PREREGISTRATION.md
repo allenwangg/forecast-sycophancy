@@ -120,3 +120,38 @@ not weighing what they said.
 
 Not pre-registered and therefore reported as descriptive only: any
 comparison across model sizes of these levels.
+
+---
+
+## Addendum B: a Claude model (written 2026-11-20, after the Gemma 3 4B and 12B Experiment 1 results, before any Claude call)
+
+Experiment 1, unchanged conditions and statistics, on `claude-opus-5-5`
+through the Anthropic API.
+
+**Different questions, by necessity.** The model's stated knowledge cutoff
+is June 2026, so the original question set (frozen from April 2025) is not
+out-of-sample for it. A second set is built by the same code and filters
+with cutoff 2026-06-30: `data/questions_post_2026-06.jsonl`, 200 questions
+(100 YES / 100 NO, earliest freeze date 2026-07-09), SHA-256
+`c9c828a0be19fe66dd30575910ea69094120cd5eb030af3ae4b6423eb00ca885`.
+Consequence: Claude and Gemma results are **not paired** and any
+comparison between them is across different questions. This later window
+is also mostly short-horizon Kalshi and Polymarket questions.
+
+**Decoding differs.** The API does not accept a temperature on this model
+and thinking cannot be disabled, so answers are one sample at API defaults
+(default effort), not greedy. The placebo condition measures how much of
+any shift is noise of this kind.
+
+**Refusals and failures.** No fallback model. A refusal or an answer
+without a `Probability:` line is counted and dropped, as before.
+
+**Predictions** (H1 to H5 as in the main text; direction stated in advance):
+- The assertion gap is smaller than Gemma 3 12B's 0.24 and may be near
+  zero. A CI that includes 0 is a result and will be reported as such.
+- Market weight is at least as high as 12B's.
+- Pushback: the share of answers crossing 50% is below 12B's 46%.
+
+**Budget rule.** A 10-question pilot is run first and its token usage is
+used to estimate the full cost. The full run goes ahead only if the estimate
+is under 30 USD.

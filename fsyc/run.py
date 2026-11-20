@@ -10,7 +10,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from .backends import make_backend, parse_probability
@@ -33,49 +35,73 @@ def _load_done(path: Path):
     return done
 
 
-def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_row=5, log=print):
+def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_row=5, log=print,
+        workers: int = 1):
+    """`workers` > 1 runs that many QUESTIONS at once (API backends only; a
+    local model gains nothing). Conditions within a question stay in order,
+    because pushback needs that question's baseline answer."""
     out.parent.mkdir(parents=True, exist_ok=True)
     done = _load_done(out)
-    errs_row = 0
-    n_new = 0
+    lock = threading.Lock()
+    state = {"errs_row": 0, "n_new": 0, "n_q": 0, "stop": False}
     t0 = time.time()
-    with out.open("a") as f:
-        for qi, q in enumerate(questions):
-            q = dict(q, placebo_number=placebo_number(q["id"]))
-            for c in conditions:
-                if (q["id"], c) in done:
-                    continue
-                extra = {}
-                if c == "pushback":
-                    first = done.get((q["id"], "baseline"))
-                    if first is None or first["p"] is None:
-                        continue  # needs a parsed baseline answer first
-                    msgs = pushback(q, first["raw"], first["p"])
-                    extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
+    f = out.open("a")
+
+    def one_question(q):
+        q = dict(q, placebo_number=placebo_number(q["id"]))
+        for c in conditions:
+            if state["stop"] or (q["id"], c) in done:
+                continue
+            extra = {}
+            if c == "pushback":
+                first = done.get((q["id"], "baseline"))
+                if first is None or first["p"] is None:
+                    continue  # needs a parsed baseline answer first
+                msgs = pushback(q, first["raw"], first["p"])
+                extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
+            else:
+                msgs = SINGLE_TURN[c](q)
+            try:
+                t = time.time()
+                if hasattr(backend, "chat_meta"):
+                    text, meta = backend.chat_meta(msgs)
                 else:
-                    msgs = SINGLE_TURN[c](q)
-                try:
-                    t = time.time()
-                    text = backend.chat(msgs)
-                    errs_row = 0
-                except Exception as e:  # not written, so it is retried on resume
-                    errs_row += 1
+                    text, meta = backend.chat(msgs), {}
+            except Exception as e:  # not written, so it is retried on resume
+                with lock:
+                    state["errs_row"] += 1
                     log(f"error {q['id']}/{c}: {e!r}")
-                    if errs_row >= max_errors_in_row:
-                        raise SystemExit("too many consecutive backend errors; rerun to resume")
-                    continue
-                rec = {"id": q["id"], "condition": c, "model": backend.name,
-                       "p": parse_probability(text), "outcome": q["outcome"],
-                       "market_price": q["market_price"], "source": q["source"],
-                       "seconds": round(time.time() - t, 2), "raw": text, **extra}
+                    if state["errs_row"] >= max_errors_in_row:
+                        state["stop"] = True
+                continue
+            rec = {"id": q["id"], "condition": c, "model": backend.name,
+                   "p": parse_probability(text), "outcome": q["outcome"],
+                   "market_price": q["market_price"], "source": q["source"],
+                   "seconds": round(time.time() - t, 2), "raw": text, **extra, **meta}
+            with lock:
+                state["errs_row"] = 0
                 f.write(json.dumps(rec) + "\n")
                 f.flush()
                 done[(q["id"], c)] = rec
-                n_new += 1
-            if (qi + 1) % 10 == 0:
-                el = time.time() - t0
-                log(f"{qi + 1}/{len(questions)} questions, {n_new} new calls, {el / 60:.1f} min")
-    return n_new
+                state["n_new"] += 1
+        with lock:
+            state["n_q"] += 1
+            if state["n_q"] % 10 == 0:
+                log(f"{state['n_q']}/{len(questions)} questions, {state['n_new']} new calls, "
+                    f"{(time.time() - t0) / 60:.1f} min")
+
+    try:
+        if workers <= 1:
+            for q in questions:
+                one_question(q)
+        else:
+            with ThreadPoolExecutor(workers) as ex:
+                list(ex.map(one_question, questions))
+    finally:
+        f.close()
+    if state["stop"]:
+        raise SystemExit("too many consecutive backend errors; rerun to resume")
+    return state["n_new"]
 
 
 def main(argv=None):
@@ -86,6 +112,7 @@ def main(argv=None):
                     help="comma list; 'dose' = the Experiment 2 dose-response conditions")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--workers", type=int, default=1, help="questions in parallel (API backends)")
     a = ap.parse_args(argv)
     qs = load_jsonl(a.questions)[: a.limit]
     conds = [c for c in a.conditions.split(",") if c]
@@ -99,7 +126,7 @@ def main(argv=None):
         conds = [c for c in conds if c != "pushback"] + ["pushback"]
     be = make_backend(a.model)
     out = Path(a.out or f"results/{be.name.replace('/', '_').replace(':', '__')}.jsonl")
-    n = run(qs, be, out, conds)
+    n = run(qs, be, out, conds, workers=a.workers)
     print(f"done: {n} new rows -> {out}")
 
 

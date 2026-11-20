@@ -54,19 +54,36 @@ class OllamaBackend:
 
 
 class AnthropicBackend:
-    def __init__(self, model: str, temperature: float = 0.0, max_tokens: int = 600):
+    """Claude through the Messages API. Credentials come from the environment
+    (ANTHROPIC_API_KEY or an `ant auth login` profile).
+
+    Differences from the local runs, all forced by the API on current models:
+    sampling parameters (temperature) are not accepted, so decoding is the
+    API default rather than greedy, and thinking cannot be switched off, so
+    the model reasons privately before the visible answer. `max_tokens`
+    covers both. No fallback model is configured: a refusal is recorded as a
+    row with no probability, never answered by a different model.
+    """
+
+    def __init__(self, model: str, max_tokens: int = 4000):
         import anthropic
-        self.client = anthropic.Anthropic()
-        self.model, self.temperature, self.max_tokens = model, temperature, max_tokens
+        self.client = anthropic.Anthropic(max_retries=5)
+        self.model, self.max_tokens = model, max_tokens
         self.name = f"anthropic:{model}"
 
-    def chat(self, messages):
+    def chat_meta(self, messages):
         system = "\n".join(m["content"] for m in messages if m["role"] == "system")
         msgs = [m for m in messages if m["role"] != "system"]
         kw = {"system": system} if system else {}
         r = self.client.messages.create(model=self.model, max_tokens=self.max_tokens,
-                                        temperature=self.temperature, messages=msgs, **kw)
-        return "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
+                                        messages=msgs, **kw)
+        text = "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
+        meta = {"stop_reason": r.stop_reason, "served_model": r.model,
+                "input_tokens": r.usage.input_tokens, "output_tokens": r.usage.output_tokens}
+        return text, meta
+
+    def chat(self, messages):
+        return self.chat_meta(messages)[0]
 
 
 def _logit(p):

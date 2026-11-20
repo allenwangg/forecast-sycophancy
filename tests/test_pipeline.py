@@ -73,3 +73,13 @@ def test_dose_response_recovered(tmp_path):
     assert dr["medium"]["likelihood_ratio"]["est"] == pytest.approx(math.exp(0.8), rel=0.02)
     assert dr["strong"]["likelihood_ratio"]["est"] == pytest.approx(math.exp(1.6), rel=0.02)
     assert dr["strong_minus_weak_gap"]["lo"] > 0
+
+
+def test_parallel_run_matches_sequential(tmp_path):
+    a, b = tmp_path / "a.jsonl", tmp_path / "b.jsonl"
+    run(_questions(30), SimulatedForecaster(), a, log=lambda *x: None)
+    run(_questions(30), SimulatedForecaster(), b, log=lambda *x: None, workers=8)
+    key = lambda r: (r["id"], r["condition"])
+    ra = {key(r): r["p"] for r in map(json.loads, a.read_text().splitlines())}
+    rb = {key(r): r["p"] for r in map(json.loads, b.read_text().splitlines())}
+    assert ra == rb and len(ra) == 30 * 9
