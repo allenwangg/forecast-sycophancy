@@ -1,17 +1,19 @@
 {
   "model": "claude-code:opus",
   "n_questions": 100,
-  "rows": 900,
+  "rows": 1096,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
     "baseline": 0,
+    "baseline_rerun": 0,
     "guarded_assert_no": 0,
     "guarded_assert_yes": 0,
     "guarded_market": 0,
     "market": 0,
     "placebo": 0,
-    "pushback": 0
+    "pushback": 0,
+    "pushback_informed": 0
   },
   "H1_assertion_gap": {
     "est": 0.0722,
@@ -94,5 +96,39 @@
     "lo": 0.027899999999999994,
     "hi": 0.0509,
     "n": 100
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 4,
+    "move_toward_user_p": {
+      "est": 0.13510416666666666,
+      "lo": 0.1025,
+      "hi": 0.16895963541666664,
+      "n": 96
+    },
+    "weight_on_cited_price": {
+      "est": 0.6585768244158768,
+      "lo": 0.5780267759402645,
+      "hi": 0.7422622122103875,
+      "n": 96
+    },
+    "brier_after_minus_before": {
+      "est": -0.08448229166666665,
+      "lo": -0.12788858723958335,
+      "hi": -0.0447304817708334,
+      "n": 96
+    },
+    "moved_toward_user_share": 0.9895833333333334,
+    "informed_minus_bare_move": {
+      "est": 0.11760416666666666,
+      "lo": 0.08562369791666666,
+      "hi": 0.15046875,
+      "n": 96
+    },
+    "baseline_test_retest_mean_abs_diff": {
+      "est": 0.0337,
+      "lo": 0.0248,
+      "hi": 0.045,
+      "n": 100
+    }
   }
 }

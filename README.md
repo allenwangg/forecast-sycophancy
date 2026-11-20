@@ -126,10 +126,56 @@ caveats first, because this is a weaker setup than the Gemma runs:
   the user gave no information. This design cannot tell a model that
   weighs evidence correctly from one that ignores users. The market
   condition says both models do update on evidence, but a test where the
-  user supplies a *good* reason is the missing control.
+  user supplies a *good* reason was the missing control; it is
+  Experiment 3 below.
 
 Reports: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt),
 [`results/claude-code__fable/report.txt`](results/claude-code__fable/report.txt).
+
+### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 100)
+
+The control Experiment 1 was missing. Same second-turn slot as the bare
+"I disagree", but the user gives a real, checkable reason: the actual
+market price on the freeze date, pushing toward it. Pre-registered in
+[Addendum D](PREREGISTRATION.md) before any call. Same 100 questions.
+
+| | Opus 5.5 | Fable 5.2 |
+|---|---|---|
+| Questions used (rest already at the market price) | 96 | 94 |
+| Move toward the user, bare "I disagree" (Exp. 1) | 0.02 | 0.00 |
+| Move toward the user who cites the market price | 0.14 [0.10, 0.17] | 0.07 [0.06, 0.09] |
+| Informed minus bare move, same questions | +0.12 [0.09, 0.15] | +0.07 [0.06, 0.09] |
+| Share of answers that moved toward the user | 99% | 99% |
+| Weight on the cited price (0 ignores, 1 adopts) | 0.66 [0.58, 0.74] | 0.36 [0.28, 0.45] |
+| Brier, turn 1 → turn 2 (market itself: 0.145 / 0.150) | 0.230 → 0.145 | 0.222 → 0.172 |
+| Brier change | −0.08 [−0.13, −0.04] | −0.05 [−0.07, −0.03] |
+
+Against the pre-registered predictions:
+
+- **P2 held: both models are selective, not immovable.** They barely move
+  for "I disagree" and move in 99% of cases for "I disagree, here is the
+  market price". The low sycophancy numbers above are not stubbornness.
+- **P3 held:** accuracy improves for both.
+- **P1 failed for Fable 5.2.** I predicted a weight of at least 0.5 on the
+  cited price for both. Opus 5.5 gives 0.66; Fable 5.2 gives 0.36. Fable
+  is the least sycophantic model here and also the one that leaves the
+  most accuracy on the table when the user is right: after the informed
+  turn its Brier (0.172) is worse than Opus 5.5's (0.145, equal to the
+  market's).
+- Not predicted: the same price gets much less weight from a user in
+  turn 2 than as a statement in the first prompt (`market` condition:
+  0.82 and 0.80). A likely reason, from the text: 81 of Fable's 94 replies
+  contain "verif" (typically "I can't verify the quote"), against 16 of 96
+  for Opus. That is a keyword count, not a reading of the reasoning. The
+  two setups also differ in that the turn-2 model has already committed to
+  an answer, so this is not a clean source-trust comparison.
+
+Caveats. The bare and informed users are not perfectly matched: one pushes
+against the model's lean, the other toward the market. For this route the
+first turn had to be asked again in a fresh session; the re-asked baseline
+differs from the original by 0.03 to 0.04 on average (non-greedy decoding),
+which is smaller than both informed moves but larger than Fable's bare
+move. One run per question. Gemma 3 4B and 12B versions are queued.
 
 ### Experiment 2: dose-response on Gemma 3 4B
 
@@ -358,8 +404,9 @@ effect that matters, which is whether it also stops the model using evidence.
    (dose-response, pre-registered in Addendum A) is also running.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
-3. An informed-user condition: the user gives a correct, checkable reason.
-   Does a model that resists bare pushback still update when it should?
+3. Experiment 3 on the Gemma models (queued), and a version where the
+   user's cited "evidence" is false, to test whether the caution Fable 5.2
+   shows toward an unverifiable quote is discrimination or a flat discount.
 4. Mechanism: a linear probe on hidden states for "the model's answer before
    the user spoke". Does pressure change the internal estimate, or only the
    stated one? That separates a model that is persuaded from one that is

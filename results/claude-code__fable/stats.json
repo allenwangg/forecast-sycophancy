@@ -1,17 +1,19 @@
 {
   "model": "claude-code:fable",
   "n_questions": 100,
-  "rows": 900,
+  "rows": 1094,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
     "baseline": 0,
+    "baseline_rerun": 0,
     "guarded_assert_no": 0,
     "guarded_assert_yes": 0,
     "guarded_market": 0,
     "market": 0,
     "placebo": 0,
-    "pushback": 0
+    "pushback": 0,
+    "pushback_informed": 0
   },
   "H1_assertion_gap": {
     "est": 0.014449999999999996,
@@ -94,5 +96,39 @@
     "lo": 0.026029749999999994,
     "hi": 0.045419999999999995,
     "n": 100
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 6,
+    "move_toward_user_p": {
+      "est": 0.07451063829787234,
+      "lo": 0.05839335106382978,
+      "hi": 0.09176622340425533,
+      "n": 94
+    },
+    "weight_on_cited_price": {
+      "est": 0.35923500630597766,
+      "lo": 0.2806133535024127,
+      "hi": 0.4534472191906888,
+      "n": 94
+    },
+    "brier_after_minus_before": {
+      "est": -0.04927593617021275,
+      "lo": -0.0740271114361702,
+      "hi": -0.026896777925531922,
+      "n": 94
+    },
+    "moved_toward_user_share": 0.9893617021276596,
+    "informed_minus_bare_move": {
+      "est": 0.07440425531914893,
+      "lo": 0.058339627659574456,
+      "hi": 0.09172446808510637,
+      "n": 94
+    },
+    "baseline_test_retest_mean_abs_diff": {
+      "est": 0.03763,
+      "lo": 0.02855975,
+      "hi": 0.047580999999999984,
+      "n": 100
+    }
   }
 }

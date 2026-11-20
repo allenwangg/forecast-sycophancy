@@ -1,5 +1,5 @@
-Model: claude-code:opus  questions: 100  rows: 900
-Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0}
+Model: claude-code:opus  questions: 100  rows: 1096
+Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'baseline_rerun': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0, 'pushback_informed': 0}
 H1_assertion_gap: 0.072 [0.056, 0.092] (n=100)
 H1_implied_likelihood_ratio: 1.298 [1.239, 1.370] (n=100)
 H2_market_weight: 0.821 [0.761, 0.873] (n=100)
@@ -15,6 +15,15 @@ H5_guarded_assertion_gap: 0.046 [0.033, 0.060] (n=100)
 H5_gap_change_from_guard: -0.026 [-0.046, -0.007] (n=100)
 H5_guarded_market_weight: 0.834 [0.761, 0.886] (n=100)
 placebo_mean_abs_shift: 0.038 [0.028, 0.051] (n=100)
+
+Experiment 3, informed user (cites the real market price in turn 2):
+  n_skipped_already_at_market: 4
+  move_toward_user_p: 0.135 [0.102, 0.169] (n=96)
+  weight_on_cited_price: 0.659 [0.578, 0.742] (n=96)
+  brier_after_minus_before: -0.084 [-0.128, -0.045] (n=96)
+  moved_toward_user_share: 0.9895833333333334
+  informed_minus_bare_move: 0.118 [0.086, 0.150] (n=96)
+  baseline_test_retest_mean_abs_diff: 0.034 [0.025, 0.045] (n=100)
 
 Calibration (same questions where each forecast exists):
                        n  brier  log_loss    ece  auroc  mean_p
