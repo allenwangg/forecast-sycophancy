@@ -12,7 +12,7 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
-## Results: Gemma 3 4B and 12B, Claude Opus 5.5 (27B and Experiment 2 running)
+## Results: Gemma 3 4B and 12B, Claude Opus 5.5 (27B running)
 
 Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
 failures. Brackets are 95% paired bootstrap CIs over questions.
@@ -115,6 +115,39 @@ because this is a weaker setup than the Gemma runs:
 - This is the only model here whose unaided forecasts beat always-50%.
 
 Report: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt).
+
+### Experiment 2: dose-response on Gemma 3 4B
+
+Pre-registered in Addendum A after Experiment 1. Same 200 questions; only
+the user's sentence changes. 1,600 more calls, 0 parse failures.
+
+![dose](results/ollama__gemma3__4b/dose_response.png)
+
+| The user says | Opinion gap | Implied likelihood ratio |
+|---|---|---|
+| weak: "a slight hunch... but I really don't know" | 0.21 [0.18, 0.25] | 1.7 [1.5, 1.9] |
+| medium: "pretty confident" (Experiment 1) | 0.48 [0.44, 0.52] | 3.5 [3.2, 4.0] |
+| strong: "absolutely certain... no doubt in my mind" | 0.76 [0.72, 0.81] | 19 [16, 24] |
+| expert: professional forecaster + "pretty confident" | 0.42 [0.37, 0.46] | 2.8 [2.5, 3.1] |
+| reason: "pretty confident... because the market is leaning that way" | 0.49 [0.46, 0.52] | 3.3 [3.0, 3.6] |
+
+- **E2a held: the effect scales with stated confidence.** Strong minus weak
+  gap is 0.55 [0.50, 0.60]. Under "absolutely certain" the model's mean
+  forecast is 0.89 when the user says YES and 0.12 when they say NO, on
+  the same questions. It tracks how sure the user sounds, with nothing
+  else to go on.
+- **A disowned hunch still moves it 21 points.** A user who says "I really
+  don't know" should carry a likelihood ratio near 1. The model gives it 1.7.
+- **E2b did not hold.** I predicted a claimed credential would add weight.
+  It did the opposite: expert minus medium is −0.06 [−0.12, −0.01]. I do not
+  have a tested explanation. One guess is that the longer sentence dilutes
+  the confidence statement; that would need its own control.
+- **E2c did not hold.** A claimed, unverifiable reason added nothing
+  detectable: reason minus medium is +0.01 [−0.03, +0.06].
+
+So on this model the lever is the user's tone of certainty, not who they
+say they are or why they say they believe it. Two of my three predictions
+were wrong. The 12B version of this experiment is queued.
 
 ### Gemma 3 4B in detail
 

@@ -1,0 +1,21 @@
+10/200 questions, 80 new calls, 4.7 min
+20/200 questions, 160 new calls, 9.2 min
+30/200 questions, 240 new calls, 13.7 min
+40/200 questions, 320 new calls, 18.4 min
+50/200 questions, 400 new calls, 22.6 min
+60/200 questions, 480 new calls, 27.5 min
+70/200 questions, 560 new calls, 32.4 min
+80/200 questions, 640 new calls, 37.0 min
+90/200 questions, 720 new calls, 41.7 min
+100/200 questions, 800 new calls, 46.1 min
+110/200 questions, 880 new calls, 51.1 min
+120/200 questions, 960 new calls, 55.2 min
+130/200 questions, 1040 new calls, 59.7 min
+140/200 questions, 1120 new calls, 65.0 min
+150/200 questions, 1200 new calls, 69.5 min
+160/200 questions, 1280 new calls, 74.4 min
+170/200 questions, 1360 new calls, 78.9 min
+180/200 questions, 1440 new calls, 83.5 min
+190/200 questions, 1520 new calls, 88.0 min
+200/200 questions, 1600 new calls, 92.6 min
+done: 1600 new rows -> results/ollama__gemma3__4b.jsonl
