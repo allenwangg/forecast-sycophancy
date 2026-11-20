@@ -62,16 +62,19 @@ shown otherwise.
 Tables and CIs: [`results/comparison.md`](results/comparison.md), from
 `python -m fsyc.compare`.
 
-### Claude Opus 5.5 and Claude Fable 5.2 (through Claude Code, n = 100, different questions)
+### Claude Opus 5.5 and Claude Fable 5.2 (through Claude Code, n = 200, different questions)
 
 Pre-registered in Addenda B and C before any call to each model. Read the
 caveats first, because this is a weaker setup than the Gemma runs:
 
 - **Different questions.** These models' knowledge runs to June 2026, so
   they get a second set built by the same code from questions asked after
-  2026-06-30 (first 100 of `data/questions_post_2026-06.jsonl`, 45 YES /
-  55 NO). Nothing below is paired with Gemma. The two Claude models share
-  the same 100 questions and are paired with each other.
+  2026-06-30 (`data/questions_post_2026-06.jsonl`, 100 YES / 100 NO).
+  Nothing below is paired with Gemma. The two Claude models share the
+  same 200 questions and are paired with each other. The first 100 were
+  run and published first; the n = 100 figures are in the git history
+  and the n = 200 figures below did not change any conclusion except the
+  one about beating always-50%, noted below.
 - **A product harness, not the bare model.** Calls go through the Claude
   Code CLI in headless mode on a subscription login, not the API. Its
   system prompt is replaced and tools are off, but the CLI adds about 4,300
@@ -84,44 +87,50 @@ caveats first, because this is a weaker setup than the Gemma runs:
   prompts, pre-registered statistics and raw outputs are all in the repo so
   the numbers can be checked without trusting that.
 
-900 calls per model, 0 parse failures, served model as named on every call.
+1,800 calls per model (plus Experiment 3), 0 parse failures, served model as named on every call.
 
 | | Claude Opus 5.5 | Claude Fable 5.2 | for reference: gemma3:12b (n=200, other questions) |
 |---|---|---|---|
-| Opinion gap, p(says YES) − p(says NO) | 0.07 [0.06, 0.09] | 0.01 [0.00, 0.03] | 0.24 [0.21, 0.27] |
-| Implied likelihood ratio of one opinion | 1.30 [1.24, 1.37] | 1.06 [1.03, 1.10] | 1.86 [1.73, 2.01] |
-| "I disagree": mean move toward user | 0.02 [0.01, 0.02] | 0.00 [0.00, 0.00] | 0.23 [0.22, 0.24] |
-| "I disagree": answers crossing 50% (%) | 2 [0, 5] | 0 | 46 [38, 52] |
-| "I disagree": answers left unchanged (%) | 28 | 99 | 0 |
-| Weight on real market price (0 to 1) | 0.82 [0.76, 0.87] | 0.80 [0.69, 0.90] | 0.93 [0.88, 0.96] |
-| Brier change when user is wrong | +0.04 [0.02, 0.06] | +0.01 [0.00, 0.02] | +0.12 [0.10, 0.15] |
-| Opinion gap with guard prompt | 0.05 [0.03, 0.06] | 0.03 [0.02, 0.04] | 0.05 [0.03, 0.06] |
-| Placebo: mean absolute change | 0.04 [0.03, 0.05] | 0.04 [0.03, 0.05] | 0.06 [0.05, 0.08] |
-| Baseline Brier (always-50% = 0.250) | 0.224 | 0.205 | 0.279 |
-| Baseline AUROC | 0.75 | 0.78 | 0.62 |
+| Opinion gap, p(says YES) − p(says NO) | 0.08 [0.07, 0.09] | 0.02 [0.01, 0.03] | 0.24 [0.21, 0.27] |
+| Implied likelihood ratio of one opinion | 1.31 [1.26, 1.35] | 1.09 [1.06, 1.12] | 1.86 [1.73, 2.01] |
+| "I disagree": mean move toward user | 0.02 [0.02, 0.02] | 0.00 [0.00, 0.00] | 0.23 [0.22, 0.24] |
+| "I disagree": answers crossing 50% (%) | 3 [1, 6] | 0 | 46 [38, 52] |
+| "I disagree": answers left unchanged (%) | 33 | 99.5 | 0 |
+| Weight on real market price (0 to 1) | 0.86 [0.83, 0.89] | 0.85 [0.79, 0.91] | 0.93 [0.88, 0.96] |
+| Brier change when user is wrong | +0.05 [0.04, 0.06] | +0.02 [0.01, 0.02] | +0.12 [0.10, 0.15] |
+| Opinion gap with guard prompt | 0.05 [0.04, 0.06] | 0.03 [0.02, 0.04] | 0.05 [0.03, 0.06] |
+| Placebo: mean absolute change | 0.04 [0.03, 0.05] | 0.03 [0.03, 0.04] | 0.06 [0.05, 0.08] |
+| Baseline Brier (always-50% = 0.250) | 0.238 | 0.222 | 0.279 |
+| Baseline AUROC | 0.76 | 0.79 | 0.62 |
 
 - **Pushback mostly fails on Opus 5.5 and fails on Fable 5.2.** After "I
-  disagree" with no new information, Opus moved 0.02 on average and 2 of
-  100 answers crossed 50%. Fable repeated its first number in 99 of 100
+  disagree" with no new information, Opus moved 0.02 on average and 3% of
+  answers crossed 50%. Fable repeated its first number in 199 of 200
   cases. A typical Fable reply: *"Your disagreement doesn't come with new
   information... so I have nothing concrete to update on... If you know the
   market's actual resolution criteria or the results, tell me and I will
   revise accordingly. Until then I am holding my estimate."*
 - **A stated opinion moves Opus a little and Fable barely.** Opus: gap
-  0.07, directional (+0.04 for YES, −0.03 for NO). Fable: gap 0.014
-  [0.004, 0.025], which is smaller than its own placebo noise (mean
-  absolute change 0.035) though the CI excludes 0. Paired difference in
-  gap, Fable minus Opus: −0.06 [−0.08, −0.04].
-- **Both use evidence.** Market weights 0.82 and 0.80; with the price,
-  both match the market's own Brier (0.142 and 0.140 vs 0.146).
-- **The guard prompt has nothing to remove.** Opus 0.07 → 0.05. On Fable the
-  guarded gap (0.03) is not lower than the unguarded one (0.01); the
-  change is +0.01 [−0.00, +0.03].
+  0.08, directional (+0.04 for YES, −0.04 for NO). Fable: gap 0.020
+  [0.011, 0.030], which is smaller than its own placebo noise (mean
+  absolute change 0.034) though the CI excludes 0. Paired difference in
+  gap, Fable minus Opus: −0.06 [−0.07, −0.05].
+- **Both use evidence.** Market weights 0.86 and 0.85; with the price,
+  both match the market's own Brier (0.148 and 0.149 vs 0.147).
+- **The guard prompt has little to remove.** Opus 0.08 → 0.05 (change
+  −0.03 [−0.05, −0.02]). On Fable the guarded gap (0.03) is not lower
+  than the unguarded one (0.02); the change is +0.01 [−0.00, +0.02].
 - **Pre-registered predictions.** Opus: gap below 12B's (held), flip rate
-  below 12B's (held), market weight at least 12B's (**did not hold**: 0.82
+  below 12B's (held), market weight at least 12B's (**did not hold**: 0.86
   vs 0.93, on different questions). Fable: gap and pushback shift not
   larger than Opus's (held).
-- These are the only models here whose unaided forecasts beat always-50%.
+- **Forecast skill is not established.** Both baseline Brier scores are
+  below always-50% as point estimates, but the difference is not
+  distinguishable from zero: Opus −0.012 [−0.051, +0.029], Fable −0.028
+  [−0.068, +0.011]. At n = 100 the point estimates looked better (0.224
+  and 0.205); the second hundred questions pulled them back. AUROC of
+  0.76 and 0.79 says the ranking carries information; the calibration
+  does not yet beat a constant.
 - A caution on reading "0 moved": holding firm is right here only because
   the user gave no information. This design cannot tell a model that
   weighs evidence correctly from one that ignores users. The market
@@ -132,50 +141,53 @@ caveats first, because this is a weaker setup than the Gemma runs:
 Reports: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt),
 [`results/claude-code__fable/report.txt`](results/claude-code__fable/report.txt).
 
-### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 100)
+### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 
 The control Experiment 1 was missing. Same second-turn slot as the bare
 "I disagree", but the user gives a real, checkable reason: the actual
 market price on the freeze date, pushing toward it. Pre-registered in
-[Addendum D](PREREGISTRATION.md) before any call. Same 100 questions.
+[Addendum D](PREREGISTRATION.md) before any call. Same 200 questions
+(the first 100 were run first; the conclusions did not change).
 
 | | Opus 5.5 | Fable 5.2 |
 |---|---|---|
-| Questions used (rest already at the market price) | 96 | 94 |
+| Questions used (rest already at the market price) | 190 | 191 |
 | Move toward the user, bare "I disagree" (Exp. 1) | 0.02 | 0.00 |
-| Move toward the user who cites the market price | 0.14 [0.10, 0.17] | 0.07 [0.06, 0.09] |
-| Informed minus bare move, same questions | +0.12 [0.09, 0.15] | +0.07 [0.06, 0.09] |
-| Share of answers that moved toward the user | 99% | 99% |
-| Weight on the cited price (0 ignores, 1 adopts) | 0.66 [0.58, 0.74] | 0.36 [0.28, 0.45] |
-| Brier, turn 1 → turn 2 (market itself: 0.145 / 0.150) | 0.230 → 0.145 | 0.222 → 0.172 |
-| Brier change | −0.08 [−0.13, −0.04] | −0.05 [−0.07, −0.03] |
+| Move toward the user who cites the market price | 0.16 [0.13, 0.18] | 0.07 [0.06, 0.08] |
+| Informed minus bare move, same questions | +0.14 [0.11, 0.16] | +0.07 [0.06, 0.08] |
+| Share of answers that moved toward the user | 99% | 98% |
+| Weight on the cited price (0 ignores, 1 adopts) | 0.69 [0.63, 0.75] | 0.33 [0.28, 0.39] |
+| Brier, turn 1 → turn 2 (market itself: 0.151 / 0.152) | 0.260 → 0.162 | 0.236 → 0.192 |
+| Brier change | −0.10 [−0.13, −0.07] | −0.04 [−0.06, −0.03] |
 
 Against the pre-registered predictions:
 
 - **P2 held: both models are selective, not immovable.** They barely move
-  for "I disagree" and move in 99% of cases for "I disagree, here is the
-  market price". The low sycophancy numbers above are not stubbornness.
+  for "I disagree" and move in 98 to 99% of cases for "I disagree, here is
+  the market price". The low sycophancy numbers above are not stubbornness.
 - **P3 held:** accuracy improves for both.
 - **P1 failed for Fable 5.2.** I predicted a weight of at least 0.5 on the
-  cited price for both. Opus 5.5 gives 0.66; Fable 5.2 gives 0.36. Fable
+  cited price for both. Opus 5.5 gives 0.69; Fable 5.2 gives 0.33. Fable
   is the least sycophantic model here and also the one that leaves the
   most accuracy on the table when the user is right: after the informed
-  turn its Brier (0.172) is worse than Opus 5.5's (0.145, equal to the
-  market's).
+  turn its Brier (0.192) is worse than Opus 5.5's (0.162), and neither
+  reaches the market's 0.15.
 - Not predicted: the same price gets much less weight from a user in
   turn 2 than as a statement in the first prompt (`market` condition:
-  0.82 and 0.80). A likely reason, from the text: 81 of Fable's 94 replies
-  contain "verif" (typically "I can't verify the quote"), against 16 of 96
-  for Opus. That is a keyword count, not a reading of the reasoning. The
-  two setups also differ in that the turn-2 model has already committed to
-  an answer, so this is not a clean source-trust comparison.
+  0.86 and 0.85). A likely reason, from the text: 170 of Fable's 191
+  replies contain "verif" (typically "I can't verify the quote"), against
+  37 of 190 for Opus. That is a keyword count, not a reading of the
+  reasoning. The two setups also differ in that the turn-2 model has
+  already committed to an answer, so this is not a clean source-trust
+  comparison.
 
 Caveats. The bare and informed users are not perfectly matched: one pushes
 against the model's lean, the other toward the market. For this route the
 first turn had to be asked again in a fresh session; the re-asked baseline
-differs from the original by 0.03 to 0.04 on average (non-greedy decoding),
-which is smaller than both informed moves but larger than Fable's bare
-move. One run per question. Gemma 3 4B and 12B versions are queued.
+differs from the original by 0.035 to 0.04 on average (non-greedy
+decoding), which is smaller than both informed moves but larger than
+Fable's bare move. One run per question. Gemma 3 4B and 12B versions are
+queued.
 
 ### Experiment 2: dose-response on Gemma 3 4B
 
@@ -375,7 +387,7 @@ effect that matters, which is whether it also stops the model using evidence.
   easier to push. 12B has somewhat more skill and defers about half as
   much, which fits that reading; neither beats always-50% unaided. The two frontier models tested (Claude
   Opus 5.5 and Fable 5.2) went through a product harness with context I cannot see, on
-  100 different questions; a clean API run on the same questions is the
+  200 different questions; a clean API run on the same questions is the
   obvious next step and was not done for cost.
 - **One wording per condition.** Each condition is a single phrasing. The
   effect size depends on wording ("pretty confident" vs. "certain", with or

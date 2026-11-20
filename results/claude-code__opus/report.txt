@@ -1,50 +1,50 @@
-Model: claude-code:opus  questions: 100  rows: 1096
+Model: claude-code:opus  questions: 200  rows: 2190
 Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'baseline_rerun': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0, 'pushback_informed': 0}
-H1_assertion_gap: 0.072 [0.056, 0.092] (n=100)
-H1_implied_likelihood_ratio: 1.298 [1.239, 1.370] (n=100)
-H2_market_weight: 0.821 [0.761, 0.873] (n=100)
-H2_brier_market_minus_baseline: -0.082 [-0.129, -0.039] (n=100)
-H3 shift_toward_user_p: 0.017 [0.014, 0.021] (n=100)
-H3 shift_toward_user_logodds: 0.145 [0.117, 0.175] (n=100)
-H3 flip_rate: 0.020 [0.000, 0.050] (n=100)
-H3 moved_toward_user_share: 0.710
-H3 unchanged_share: 0.280
-H4_brier_user_wrong_minus_baseline: 0.038 [0.023, 0.055] (n=100)
-H4_brier_user_right_minus_baseline: -0.025 [-0.043, -0.008] (n=100)
-H5_guarded_assertion_gap: 0.046 [0.033, 0.060] (n=100)
-H5_gap_change_from_guard: -0.026 [-0.046, -0.007] (n=100)
-H5_guarded_market_weight: 0.834 [0.761, 0.886] (n=100)
-placebo_mean_abs_shift: 0.038 [0.028, 0.051] (n=100)
+H1_assertion_gap: 0.078 [0.066, 0.091] (n=200)
+H1_implied_likelihood_ratio: 1.305 [1.263, 1.353] (n=200)
+H2_market_weight: 0.863 [0.829, 0.893] (n=200)
+H2_brier_market_minus_baseline: -0.090 [-0.125, -0.057] (n=200)
+H3 shift_toward_user_p: 0.019 [0.015, 0.024] (n=200)
+H3 shift_toward_user_logodds: 0.147 [0.123, 0.175] (n=200)
+H3 flip_rate: 0.030 [0.010, 0.055] (n=200)
+H3 moved_toward_user_share: 0.665
+H3 unchanged_share: 0.330
+H4_brier_user_wrong_minus_baseline: 0.048 [0.036, 0.062] (n=200)
+H4_brier_user_right_minus_baseline: -0.026 [-0.038, -0.014] (n=200)
+H5_guarded_assertion_gap: 0.045 [0.036, 0.055] (n=200)
+H5_gap_change_from_guard: -0.033 [-0.047, -0.019] (n=200)
+H5_guarded_market_weight: 0.866 [0.827, 0.897] (n=200)
+placebo_mean_abs_shift: 0.042 [0.034, 0.051] (n=200)
 
 Experiment 3, informed user (cites the real market price in turn 2):
-  n_skipped_already_at_market: 4
-  move_toward_user_p: 0.135 [0.102, 0.169] (n=96)
-  weight_on_cited_price: 0.659 [0.578, 0.742] (n=96)
-  brier_after_minus_before: -0.084 [-0.128, -0.045] (n=96)
-  moved_toward_user_share: 0.9895833333333334
-  informed_minus_bare_move: 0.118 [0.086, 0.150] (n=96)
-  baseline_test_retest_mean_abs_diff: 0.034 [0.025, 0.045] (n=100)
+  n_skipped_already_at_market: 10
+  move_toward_user_p: 0.155 [0.131, 0.180] (n=190)
+  weight_on_cited_price: 0.690 [0.633, 0.747] (n=190)
+  brier_after_minus_before: -0.098 [-0.131, -0.069] (n=190)
+  moved_toward_user_share: 0.9894736842105263
+  informed_minus_bare_move: 0.136 [0.112, 0.161] (n=190)
+  baseline_test_retest_mean_abs_diff: 0.039 [0.031, 0.049] (n=200)
 
 Calibration (same questions where each forecast exists):
                        n  brier  log_loss    ece  auroc  mean_p
 forecast                                                       
-baseline             100  0.224     0.664  0.183  0.749   0.335
-market               100  0.142     0.432  0.080  0.878   0.421
-guarded_market       100  0.142     0.430  0.086  0.879   0.421
-assert_yes           100  0.225     0.646  0.155  0.730   0.378
-assert_no            100  0.236     0.699  0.191  0.740   0.305
-guarded_assert_yes   100  0.221     0.659  0.149  0.737   0.369
-guarded_assert_no    100  0.229     0.690  0.157  0.740   0.323
-placebo              100  0.230     0.680  0.181  0.734   0.353
-pushback             100  0.217     0.634  0.180  0.755   0.342
-user_wrong           100  0.262     0.771  0.191  0.657   0.345
-user_right           100  0.199     0.574  0.149  0.807   0.338
-market_price_itself  100  0.146     0.444  0.075  0.869   0.437
-always_50pct         100  0.250     0.693  0.050  0.500   0.500
+baseline             200  0.238     0.707  0.198  0.759   0.351
+market               200  0.148     0.445  0.091  0.885   0.417
+guarded_market       200  0.149     0.447  0.098  0.884   0.417
+assert_yes           200  0.234     0.668  0.179  0.744   0.387
+assert_no            200  0.265     0.772  0.238  0.734   0.308
+guarded_assert_yes   200  0.239     0.697  0.191  0.742   0.373
+guarded_assert_no    200  0.256     0.758  0.226  0.735   0.328
+placebo              200  0.252     0.739  0.219  0.731   0.354
+pushback             200  0.236     0.690  0.204  0.757   0.352
+user_wrong           200  0.286     0.832  0.234  0.653   0.341
+user_right           200  0.212     0.608  0.178  0.810   0.354
+market_price_itself  200  0.147     0.443  0.073  0.882   0.430
+always_50pct         200  0.250     0.693  0.000  0.500   0.500
 
 Assertion gap by baseline confidence:
                      count   mean
 baseline_confidence              
-near 50%                23  0.096
-moderate                33  0.095
-confident               44  0.043
+near 50%                42  0.110
+moderate                71  0.105
+confident               87  0.041
