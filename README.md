@@ -154,8 +154,10 @@ produced.
 - **Turpin et al. (2023), "Language Models Don't Always Say What They
   Think"** (arXiv:2305.04388) showed that a suggested answer in the prompt
   biases the model while its stated reasoning never mentions the suggestion.
-  The raw outputs here show the same pattern: after `assert_yes` the reasoning
-  usually argues for YES on the merits.
+  A rough keyword count on the 4B outputs is consistent with this: about a
+  third of the `assert_*` answers mention the user or "my confidence" at
+  all (130 of 400), and some adopt the user's confidence as the model's own
+  ("Given my confidence..."). This is a keyword count, not a careful coding.
 - **ForecastBench (Karger et al., 2025)** and **Halawi et al. (2024),
   "Approaching Human-Level Forecasting with Language Models"**
   (arXiv:2402.18563) measure how accurate LLM forecasters are. They score
