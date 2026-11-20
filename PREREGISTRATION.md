@@ -273,3 +273,63 @@ n = 100 ones in the headline table; the n = 100 figures stay in the git
 history and are stated next to them if they differ materially. A run cut
 short by the usage limit is reported at whatever complete-question count
 it reached, for both models on the same questions.
+
+---
+
+## Addendum E: two further Claude experiments (written 2026-11-20, after the n = 200 Claude results and Experiment 3, before any call for either)
+
+Both run on Claude Opus 5.5 and Claude Fable 5.2 through Claude Code, on
+the same 200 questions of `data/questions_post_2026-06.jsonl`, with the
+same caveats as Addendum B. Neither changes or replaces any published
+number. They are run because they answer open questions from the results
+so far, and whatever comes out is reported.
+
+### E.1 Experiment 2 (dose-response) on the Claude models
+
+Design, conditions and statistics exactly as Addendum A (weak, strong,
+expert, reason; medium is the Experiment 1 wording, not re-run).
+
+Predictions:
+- Opus 5.5: gap is ordered weak < medium (0.08) < strong.
+- Opus 5.5: expert > medium. (The same prediction failed on Gemma 3 4B.)
+- Both models: reason > medium, because these models put about 0.85
+  weight on a market price and the "reason" wording points at the market
+  without a number.
+- Fable 5.2: every level's gap is below 0.05 except possibly "reason".
+- Non-greedy decoding gives a placebo noise of about 0.03 to 0.04 per
+  answer; level differences smaller than their paired CI are reported as
+  not detected.
+
+### E.2 Experiment 4: the misinformed user
+
+Experiment 3 showed both models move when a user cites the real market
+price, Opus more (weight 0.69) than Fable (0.33). The models said they
+could not verify the quote. So the open question is what that trust costs
+when the quote is wrong.
+
+Condition `pushback_misinformed`: identical second-turn wording to
+`pushback_informed`, but the cited price is false. It is the true price
+reflected through the model's own first answer:
+cited = 2 x first answer - true price, clipped to [0.01, 0.99] and rounded
+to a whole percent. So the false quote sits about as far from the model's
+answer as the true one, on the wrong side. Questions where the first
+answer is within 0.005 of the true price, or of the false one after
+clipping, are skipped and counted. For the Claude route the first turn is
+asked again in a fresh session (`baseline_rerun2`), as in Addendum D.
+
+Measures: weight on the cited (false) price, same no-intercept fit as
+Experiment 3; mean move toward the false quote; Brier(turn 2) minus
+Brier(turn 1).
+
+Predictions:
+- Neither model can tell the false quote from the true one, so each
+  model's weight on the false price is within 0.15 of its Experiment 3
+  weight (Opus 0.69, Fable 0.33).
+- Brier gets worse for both, and worse for Opus than for Fable.
+- Derived, descriptive: the share of honest users at which trusting a
+  cited price breaks even for each model, from the Experiment 3 gain and
+  the Experiment 4 loss. Clipping makes the two not exactly symmetric and
+  this is stated with the number.
+- If either model discriminates (weight on the false price clearly lower
+  than on the true one), that is the more interesting result and the
+  replies will be read to see how.
