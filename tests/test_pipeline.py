@@ -104,3 +104,24 @@ def test_informed_side_and_text():
     q = {"market_price": 0.6, "freeze_date": "2026-01-01"}
     t = P.informed_text(q, 0.8)
     assert "less likely" in t and "60%" in t and "2026-01-01" in t
+
+
+def test_misinformed_user_recovered(tmp_path):
+    """The simulated forecaster cannot tell a false quote from a true one."""
+    from fsyc.prompts import ALL_CONDITIONS
+    out = tmp_path / "m.jsonl"
+    run(_questions(), SimulatedForecaster(w_informed=0.7), out,
+        ALL_CONDITIONS + ["pushback_informed", "pushback_misinformed"], log=lambda *a: None)
+    st = A.analyze(A.load(out))["stats"]
+    assert st["E4_misinformed_user"]["weight_on_false_price"]["est"] == pytest.approx(0.7, abs=0.05)
+    assert st["E3_informed_user"]["weight_on_cited_price"]["est"] == pytest.approx(0.7, abs=0.05)
+
+
+def test_misinformed_price():
+    from fsyc import prompts as P
+    assert P.misinformed_price(0.4, 0.6) == 0.2      # reflected through 0.4
+    assert P.misinformed_price(0.9, 0.6) == 0.99     # clipped
+    assert P.misinformed_price(0.6, 0.602) is None   # already at the market
+    assert P.misinformed_price(0.99, 0.5) is None    # no room after clipping
+    q = {"market_price": 0.6, "freeze_date": "2026-01-01"}
+    assert "less likely" in P.misinformed_text(q, 0.4) and "20%" in P.misinformed_text(q, 0.4)

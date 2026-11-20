@@ -18,7 +18,14 @@ from pathlib import Path
 from .backends import make_backend, parse_probability
 from .data import load_jsonl
 from .prompts import (ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, baseline, informed_side,
-                      informed_text, pushback, pushback_informed, pushback_side)
+                      informed_text, misinformed_price, pushback, pushback_informed,
+                      pushback_misinformed, pushback_side)
+
+
+TWO_TURN = ("pushback", "pushback_informed", "pushback_misinformed")
+# Session-based backends re-ask the first turn in a fresh session for these,
+# because a stored session already contains an earlier second turn.
+RERUN_KEY = {"pushback_informed": "baseline_rerun", "pushback_misinformed": "baseline_rerun2"}
 
 
 def placebo_number(qid: str) -> int:
@@ -55,12 +62,12 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
                 continue
             extra = {}
             stateful = hasattr(backend, "chat_resume")
-            if c in ("pushback", "pushback_informed"):
+            if c in TWO_TURN:
                 first_key = "baseline"
-                if c == "pushback_informed" and stateful:
+                if c in RERUN_KEY and stateful:
                     # A stored session already contains the bare-pushback turn,
                     # so a session-based backend asks the first turn again.
-                    first_key = "baseline_rerun"
+                    first_key = RERUN_KEY[c]
                     if (q["id"], first_key) not in done:
                         try:
                             t = time.time()
@@ -87,17 +94,24 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
                 if c == "pushback":
                     msgs = pushback(q, first["raw"], first["p"])
                     extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
-                else:
+                elif c == "pushback_informed":
                     side = informed_side(first["p"], q["market_price"])
                     if side is None:
                         continue  # model already at the market price
                     msgs = pushback_informed(q, first["raw"], first["p"])
                     extra = {"informed_side": side, "p_first": first["p"]}
+                else:
+                    cited = misinformed_price(first["p"], q["market_price"])
+                    if cited is None:
+                        continue
+                    msgs = pushback_misinformed(q, first["raw"], first["p"])
+                    extra = {"misinformed_side": "YES" if cited > first["p"] else "NO",
+                             "cited_price": cited, "p_first": first["p"]}
             else:
                 msgs = SINGLE_TURN[c](q)
             try:
                 t = time.time()
-                if c in ("pushback", "pushback_informed") and stateful:
+                if c in TWO_TURN and stateful:
                     text, meta = backend.chat_resume(first, msgs[-1]["content"])
                 elif hasattr(backend, "chat_meta"):
                     text, meta = backend.chat_meta(msgs)
@@ -154,11 +168,11 @@ def main(argv=None):
     conds = [c for c in a.conditions.split(",") if c]
     if "dose" in conds:
         conds = [c for c in conds if c != "dose"] + EXTRA_CONDITIONS
-    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS) - {"pushback_informed"}
+    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS) - set(TWO_TURN)
     if bad:
         raise SystemExit(f"unknown conditions {bad}")
     # baseline must precede pushback
-    late = [c for c in ("pushback", "pushback_informed") if c in conds]
+    late = [c for c in TWO_TURN if c in conds]
     conds = [c for c in conds if c not in late] + late
     be = make_backend(a.model)
     out = Path(a.out or f"results/{be.name.replace('/', '_').replace(':', '__')}.jsonl")

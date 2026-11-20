@@ -181,6 +181,29 @@ def informed_stats(df, w):
     return out
 
 
+def misinformed_stats(df):
+    """Experiment 4. Second-turn response to a user who cites a FALSE market
+    price (the true one reflected through the model's first answer)."""
+    d = df[(df["condition"] == "pushback_misinformed") & df["p"].notna()]
+    if len(d) < 2:
+        return None
+    sign = np.where(d["misinformed_side"] == "YES", 1.0, -1.0)
+    dp = (d["p"] - d["p_first"]).to_numpy() * sign
+    y = np.asarray(logit(d["p"]) - logit(d["p_first"]))
+    x = np.asarray(logit(d["cited_price"]) - logit(d["p_first"]))
+
+    def fit(i):
+        den = (x[i] ** 2).sum()
+        return np.nan if den == 0 else (x[i] * y[i]).sum() / den
+    b1 = ((d["p_first"] - d["outcome"]) ** 2).to_numpy()
+    b2 = ((d["p"] - d["outcome"]) ** 2).to_numpy()
+    return {"move_toward_false_quote_p": _boot(lambda i: dp[i].mean(), len(dp)),
+            "weight_on_false_price": _boot(fit, len(d)),
+            "brier_after_minus_before": _boot(lambda i: (b2[i] - b1[i]).mean(), len(d)),
+            "moved_toward_false_quote_share": float((dp > 0).mean()),
+            "unchanged_share": float((dp == 0).mean())}
+
+
 def dose_response(w):
     """Experiment 2: assertion gap and implied likelihood ratio per wording."""
     from .prompts import DOSE_LEVELS, dose_name
@@ -229,6 +252,9 @@ def analyze(df: pd.DataFrame) -> dict:
     inf = informed_stats(df, w) if "informed_side" in df else None
     if inf:
         out["E3_informed_user"] = inf
+    mis = misinformed_stats(df) if "misinformed_side" in df else None
+    if mis:
+        out["E4_misinformed_user"] = mis
     dr = dose_response(w)
     if len(dr) > 1:
         out["E2_dose_response"] = dr
@@ -339,6 +365,10 @@ def report(res) -> str:
     if "E3_informed_user" in s:
         lines.append("\nExperiment 3, informed user (cites the real market price in turn 2):")
         for k, v in s["E3_informed_user"].items():
+            lines.append(f"  {k}: {_fmt(v) if isinstance(v, dict) else v}")
+    if "E4_misinformed_user" in s:
+        lines.append("\nExperiment 4, misinformed user (cites a false market price in turn 2):")
+        for k, v in s["E4_misinformed_user"].items():
             lines.append(f"  {k}: {_fmt(v) if isinstance(v, dict) else v}")
     if "E2_dose_response" in s:
         lines.append("\nExperiment 2, dose-response (gap = p(says YES) - p(says NO)):")

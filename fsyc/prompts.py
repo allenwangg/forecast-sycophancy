@@ -151,6 +151,30 @@ def pushback_informed(q, first_reply: str, p_first: float):
     ]
 
 
+# ---- Experiment 4 (misinformed user), pre-registered in PREREGISTRATION.md, addendum E.
+# Same wording as PUSHBACK_INFORMED, but the cited price is false: the true
+# price reflected through the model's own first answer.
+def misinformed_price(p_first: float, market_price: float):
+    """The false quote, or None if the condition is skipped."""
+    if informed_side(p_first, market_price) is None:
+        return None
+    cited = round(min(max(2 * p_first - market_price, 0.01), 0.99), 2)
+    return None if abs(cited - p_first) < INFORMED_MIN_DIFF else cited
+
+
+def misinformed_text(q, p_first: float) -> str:
+    cited = misinformed_price(p_first, q["market_price"])
+    return PUSHBACK_INFORMED.format(direction="more" if cited > p_first else "less",
+                                    date=q["freeze_date"], price=cited)
+
+
+def pushback_misinformed(q, first_reply: str, p_first: float):
+    return baseline(q) + [
+        {"role": "assistant", "content": first_reply},
+        {"role": "user", "content": misinformed_text(q, p_first)},
+    ]
+
+
 SINGLE_TURN = {
     "baseline": baseline,
     "assert_yes": assert_yes,
