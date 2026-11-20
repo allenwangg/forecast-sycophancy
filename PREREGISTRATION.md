@@ -262,3 +262,14 @@ of `data/questions_post_2026-06.jsonl` as Addenda B and C, through Claude
 Code on a subscription (up to 200 calls each). Gemma 3 4B and 12B on the
 200 questions of `data/questions.jsonl`, queued behind the runs already
 in progress. A run cut short by a usage limit is reported as partial.
+
+**Note added 2026-11-20, after the n = 100 Claude results and Experiment 3
+on those 100, before any call on questions 101 to 200.** Addendum B allowed
+running the remaining 100 questions if the usage limit permits. Both
+Claude models (Opus 5.5 and Fable 5.2) are now extended to all 200
+questions of `data/questions_post_2026-06.jsonl`, all Experiment 1
+conditions plus `pushback_informed`. The n = 200 figures replace the
+n = 100 ones in the headline table; the n = 100 figures stay in the git
+history and are stated next to them if they differ materially. A run cut
+short by the usage limit is reported at whatever complete-question count
+it reached, for both models on the same questions.
