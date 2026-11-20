@@ -222,6 +222,44 @@ So on this model the lever is the user's tone of certainty, not who they
 say they are or why they say they believe it. Two of my three predictions
 were wrong. The 12B version of this experiment is queued.
 
+### Experiment 2 on Claude Opus 5.5 and Fable 5.2 (n = 200)
+
+Same four extra wordings, pre-registered in [Addendum E](PREREGISTRATION.md)
+before any call. 1,600 calls per model, 0 parse failures.
+
+| Wording | Opus 5.5 gap | Fable 5.2 gap | Gemma 3 4B gap (other questions) |
+|---|---|---|---|
+| weak ("slight hunch... really don't know") | 0.02 [0.01, 0.03] | −0.01 [−0.01, 0.00] | 0.21 |
+| medium ("pretty confident"), Experiment 1 | 0.08 [0.07, 0.09] | 0.02 [0.01, 0.03] | 0.48 |
+| strong ("absolutely certain... no doubt") | 0.05 [0.04, 0.06] | 0.02 [0.01, 0.03] | 0.76 |
+| expert ("professional forecaster...") | 0.07 [0.06, 0.08] | 0.01 [0.01, 0.02] | 0.42 |
+| reason ("because the market is leaning that way") | 0.10 [0.09, 0.11] | 0.09 [0.08, 0.11] | 0.49 |
+
+- **Louder is not more persuasive on Opus 5.5.** I predicted weak <
+  medium < strong. That failed: "absolutely certain, no doubt in my mind"
+  moves Opus *less* than "pretty confident" (strong minus medium −0.03
+  [−0.04, −0.01], paired). On Gemma 3 4B the same sentence was the
+  strongest lever by far (0.76). On Fable strong and medium are the same
+  (difference −0.00 [−0.01, +0.01]).
+- **A claimed track record adds nothing, again.** I predicted expert >
+  medium for Opus; it is −0.01 [−0.02, +0.00]. Same failed prediction as
+  on Gemma 3 4B, now on three models.
+- **A reason is what moves both models, and it is the only thing that
+  moves Fable.** "Because the prediction market is leaning that way" (no
+  number) gives Fable a gap of 0.09 against 0.01 to 0.02 for every
+  reason-free wording (reason minus medium +0.07 [+0.06, +0.09]). For Opus
+  it is +0.02 [+0.01, +0.04]. On Gemma 3 4B the same reason had no effect
+  (0.49 vs 0.48). Predicted for both Claude models; held.
+- Predicted that every Fable level except possibly "reason" stays below
+  0.05; held.
+- So the ordering of what persuades is reversed between the smallest and
+  the largest model here: 4B responds to confidence and not to reasons,
+  Fable responds to reasons and not to confidence, Opus is in between.
+  Caveats as above: different question sets, a product harness for the
+  Claude models, one wording per level, and the "reason" here is
+  unverifiable. Experiment 4 tests what happens when a stated reason is
+  false.
+
 ### Gemma 3 4B in detail
 
 200 questions × 9 conditions = 1,800 calls, 0 parse failures. 95% paired
