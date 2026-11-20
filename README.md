@@ -140,6 +140,34 @@ produced.
 | `fsyc/analyze.py` | Pre-registered statistics, tables, figures |
 | `fsyc/metrics.py` | Brier, log loss, ECE, Murphy decomposition, AUROC, bootstrap |
 
+## Related work, and what this adds
+
+- **Sharma et al. (2023), "Towards Understanding Sycophancy in Language
+  Models"** (arXiv:2310.13548) showed that assistants change correct answers
+  when a user disagrees ("I don't think that's right. Are you sure?") and
+  tailor answers to a user's stated views. The `pushback` condition here is
+  that test, moved from right/wrong answers to probabilities.
+- **Perez et al. (2022), "Discovering Language Model Behaviors with
+  Model-Written Evaluations"** (arXiv:2212.09251) measured sycophancy on
+  opinion questions and found it grows with model size. The 4B → 12B → 27B
+  runs here ask the same scale question for forecasts.
+- **Turpin et al. (2023), "Language Models Don't Always Say What They
+  Think"** (arXiv:2305.04388) showed that a suggested answer in the prompt
+  biases the model while its stated reasoning never mentions the suggestion.
+  The raw outputs here show the same pattern: after `assert_yes` the reasoning
+  usually argues for YES on the merits.
+- **ForecastBench (Karger et al., 2025)** and **Halawi et al. (2024),
+  "Approaching Human-Level Forecasting with Language Models"**
+  (arXiv:2402.18563) measure how accurate LLM forecasters are. They score
+  forecasts made in isolation, not forecasts made with a user in the loop.
+
+What is different here: (1) the outcome is a continuous probability on
+questions with ground truth, so deference has a price in Brier score and a
+size as a likelihood ratio; (2) real evidence (the market price) and bare
+opinion are tested on the same questions, so the result is a ratio of the
+two rather than "the model moved"; (3) a mitigation is tested for the side
+effect that matters, which is whether it also stops the model using evidence.
+
 ## Limitations
 
 - **Small model, little skill.** Gemma 3 4B forecasts worse than always answering 50%
