@@ -414,3 +414,28 @@ turn again in a fresh session (`baseline_rerun`) before resuming it, as
 Experiment 3 does. A 2-question smoke test to a scratch file confirmed
 unique session ids and a single served model. Pushback is re-run on all
 200 questions for both models; predictions unchanged.
+
+---
+
+## Addendum G: clean re-runs of Experiments 3, 4 and 2 on the Claude models (written 2026-11-21, after the Addendum F result, before any call)
+
+Experiments 3 (real price), 4 (false price) and 2 (dose-response) on Opus
+5.5 and Fable 5.2 were run with the contaminated context described in
+Addendum F. They are re-run on the clean route (`claude-code-clean`),
+same 200 questions and wording, appended to the clean result files, in
+this order: `pushback_informed` and `pushback_misinformed` first, then the
+eight dose conditions if the usage limit allows. Each two-turn condition
+asks its first turn again in its own fresh session (`baseline_rerun3` for
+the real price, `baseline_rerun2` for the false price), so no session
+contains more than one second turn. Originals are not changed.
+
+Predictions, stated before any call:
+- The headline holds: both models move toward a false price in at least
+  90% of cases, and the false price makes Brier worse for both.
+- Weights on the real and the false price are each within 0.15 of the
+  original values (Opus 0.69 and 0.63; Fable 0.33 and 0.51).
+- Dose-response: "absolutely certain" still does not give a larger gap
+  than "pretty confident" on either model, and "because the market is
+  leaning that way" still gives the largest gap on both.
+Results are reported next to the originals, and the README states which
+set to use.

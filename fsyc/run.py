@@ -65,8 +65,10 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
             if c in TWO_TURN:
                 first_key = "baseline"
                 rerun = RERUN_KEY.get(c)
-                if c == "pushback" and getattr(backend, "rerun_first_turn_for_pushback", False):
-                    rerun = "baseline_rerun"
+                if getattr(backend, "rerun_first_turn_for_pushback", False):
+                    # Clean route: bare pushback already took "baseline_rerun".
+                    rerun = {"pushback": "baseline_rerun",
+                             "pushback_informed": "baseline_rerun3"}.get(c, rerun)
                 if rerun and stateful:
                     # A stored session already contains another second turn (or
                     # cannot be resumed), so a session-based backend asks the
