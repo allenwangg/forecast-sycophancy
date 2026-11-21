@@ -1,0 +1,125 @@
+[Sat Nov 21 08:48:15 CST 2026] TRAIN attempt 4: display put to sleep (pmset displaysleepnow) so the GPU watchdog does not fire; settings identical
+Calling `python -m mlx_lm.lora...` directly is deprecated. Use `mlx_lm.lora...` or `python -m mlx_lm lora ...` instead.
+Loading pretrained model
+Fetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]Fetching 12 files: 100%|██████████| 12/12 [00:00<00:00, 4281.36it/s]
+Loading datasets
+Training
+[34m╭─[0m[34m [0m[1;35mmlx_lm.lora[0m[34m [0m[34m───────────────────────────────────────────────────────────────────────────────────────────────────────[0m[34m─╮[0m
+[34m│[0m    [39mmodel        [0m   [1mmlx-community/gemma-3-4b-it-4bit[0m                                                                  [34m│[0m
+[34m│[0m    [39mtype         [0m   [1mlora · 16 layers · rank 8[0m                                                                         [34m│[0m
+[34m│[0m    [39mdataset      [0m   [1mdata/train_pilot[0m                                                                                  [34m│[0m
+[34m│[0m    [39moptimizer    [0m   [1madam · lr 1.0e-05[0m                                                                                 [34m│[0m
+[34m│[0m    [39mbatch · iters[0m   [1m4 · 300[0m                                                                                           [34m│[0m
+[34m│[0m    [39mmax seq      [0m   [1m2,048[0m                                                                                             [34m│[0m
+[34m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+Trainable parameters: 0.154% (7.012M/4551.516M)
+  [1miter   train_loss     tok/s     tokens[0m
+  [38;5;244m   1[0m    [1;35mval[0m [1m1.122[0m    [38;5;244m37.44s[0m
+  [38;5;244m  10[0m    [1;32m0.496 ▼[0m    [1m   54[0m    [38;5;244m  5.0k[0m
+  [38;5;244m  20[0m    [1;32m0.255 ▼[0m    [1m   60[0m    [38;5;244m 10.3k[0m
+  [38;5;244m  30[0m    [1;32m0.189 ▼[0m    [1m   57[0m    [38;5;244m 15.5k[0m
+  [38;5;244m  40[0m    [1;33m0.246 ▲[0m    [1m   61[0m    [38;5;244m 21.1k[0m
+  [38;5;244m  50[0m    [1;35mval[0m [1m0.215[0m    [38;5;244m40.28s[0m
+  [38;5;244m  50[0m    [1;32m0.197 ▼[0m    [1m   61[0m    [38;5;244m 26.4k[0m
+  [38;5;244m  60[0m    [1;32m0.165 ▼[0m    [1m   63[0m    [38;5;244m 31.9k[0m
+  [38;5;244m  70[0m    [1;33m0.170 ▲[0m    [1m   62[0m    [38;5;244m 37.4k[0m
+  [38;5;244m  80[0m    [1;33m0.182 ▲[0m    [1m   62[0m    [38;5;244m 43.3k[0m
+  [38;5;244m  90[0m    [1;32m0.152 ▼[0m    [1m   55[0m    [38;5;244m 48.9k[0m
+  [38;5;244m 100[0m    [1;35mval[0m [1m0.209[0m    [38;5;244m41.99s[0m
+  [38;5;244m 100[0m    [1;33m0.172 ▲[0m    [1m   56[0m    [38;5;244m 54.3k[0m
+  [1;32msave[0m  [38;5;244m0000100_adapters.safetensors[0m
+  [38;5;244m 110[0m    [1;32m0.147 ▼[0m    [1m   58[0m    [38;5;244m 59.8k[0m
+  [38;5;244m 120[0m    [1;33m0.160 ▲[0m    [1m   62[0m    [38;5;244m 65.0k[0m
+  [38;5;244m 130[0m    [1;32m0.156 ▼[0m    [1m   62[0m    [38;5;244m 70.2k[0m
+  [38;5;244m 140[0m    [1;33m0.158 ▲[0m    [1m   64[0m    [38;5;244m 75.7k[0m
+  [38;5;244m 150[0m    [1;35mval[0m [1m0.184[0m    [38;5;244m40.08s[0m
+  [38;5;244m 150[0m    [1;32m0.157 ▼[0m    [1m   65[0m    [38;5;244m 81.2k[0m
+  [38;5;244m 160[0m    [1;32m0.128 ▼[0m    [1m   69[0m    [38;5;244m 86.7k[0m
+  [38;5;244m 170[0m    [1;33m0.143 ▲[0m    [1m   66[0m    [38;5;244m 92.0k[0m
+  [38;5;244m 180[0m    [1;32m0.136 ▼[0m    [1m   57[0m    [38;5;244m 97.4k[0m
+  [38;5;244m 190[0m    [1;32m0.136 ▼[0m    [1m   63[0m    [38;5;244m103.2k[0m
+  [38;5;244m 200[0m    [1;35mval[0m [1m0.202[0m    [38;5;244m36.09s[0m
+  [38;5;244m 200[0m    [1;32m0.127 ▼[0m    [1m   65[0m    [38;5;244m108.8k[0m
+  [1;32msave[0m  [38;5;244m0000200_adapters.safetensors[0m
+  [38;5;244m 210[0m    [1;32m0.117 ▼[0m    [1m   62[0m    [38;5;244m114.3k[0m
+  [38;5;244m 220[0m    [1;32m0.103 ▼[0m    [1m   62[0m    [38;5;244m119.8k[0m
+  [38;5;244m 230[0m    [1;33m0.113 ▲[0m    [1m   65[0m    [38;5;244m125.6k[0m
+  [38;5;244m 240[0m    [1;33m0.129 ▲[0m    [1m   63[0m    [38;5;244m131.0k[0m
+  [38;5;244m 250[0m    [1;35mval[0m [1m0.192[0m    [38;5;244m44.47s[0m
+  [38;5;244m 250[0m    [1;32m0.107 ▼[0m    [1m   63[0m    [38;5;244m136.3k[0m
+  [38;5;244m 260[0m    [1;33m0.117 ▲[0m    [1m   58[0m    [38;5;244m141.7k[0m
+  [38;5;244m 270[0m    [1;32m0.102 ▼[0m    [1m   63[0m    [38;5;244m147.0k[0m
+  [38;5;244m 280[0m    [1;32m0.060 ▼[0m    [1m   60[0m    [38;5;244m152.4k[0m
+  [38;5;244m 290[0m    [1;33m0.068 ▲[0m    [1m   65[0m    [38;5;244m157.7k[0m
+  [38;5;244m 300[0m    [1;35mval[0m [1m0.200[0m    [38;5;244m41.40s[0m
+  [38;5;244m 300[0m    [1;32m0.058 ▼[0m    [1m   67[0m    [38;5;244m163.1k[0m
+  [1;32msave[0m  [38;5;244m0000300_adapters.safetensors[0m
+[1;34mtrain[0m [34m██████████████████████████████[0m [1;34m100%[0m [38;5;244m·[0m [1;34m  300[0m[38;5;244m/300[0m
+[Sat Nov 21 09:37:19 CST 2026] TRAIN_DONE
+10/200 questions, 80 new calls, 4.3 min
+20/200 questions, 160 new calls, 11.2 min
+30/200 questions, 240 new calls, 17.0 min
+40/200 questions, 320 new calls, 21.7 min
+50/200 questions, 400 new calls, 25.9 min
+60/200 questions, 480 new calls, 30.4 min
+70/200 questions, 560 new calls, 35.1 min
+80/200 questions, 640 new calls, 39.6 min
+90/200 questions, 720 new calls, 47.9 min
+100/200 questions, 800 new calls, 55.9 min
+110/200 questions, 880 new calls, 61.1 min
+120/200 questions, 960 new calls, 65.3 min
+130/200 questions, 1040 new calls, 69.6 min
+140/200 questions, 1120 new calls, 73.9 min
+150/200 questions, 1200 new calls, 78.0 min
+160/200 questions, 1280 new calls, 82.2 min
+170/200 questions, 1360 new calls, 86.1 min
+180/200 questions, 1440 new calls, 90.2 min
+190/200 questions, 1520 new calls, 94.2 min
+200/200 questions, 1600 new calls, 98.7 min
+done: 1600 new rows -> results/train_pilot/mlx__gemma3-4b-lora.jsonl
+[Sat Nov 21 11:16:06 CST 2026] LORA_EVAL_DONE
+10/200 questions, 20 new calls, 1.0 min
+20/200 questions, 40 new calls, 2.0 min
+30/200 questions, 60 new calls, 2.9 min
+40/200 questions, 80 new calls, 4.0 min
+50/200 questions, 100 new calls, 5.0 min
+60/200 questions, 120 new calls, 5.9 min
+70/200 questions, 140 new calls, 7.1 min
+80/200 questions, 158 new calls, 7.9 min
+90/200 questions, 176 new calls, 8.8 min
+100/200 questions, 196 new calls, 9.8 min
+110/200 questions, 216 new calls, 11.0 min
+120/200 questions, 236 new calls, 12.0 min
+130/200 questions, 253 new calls, 12.9 min
+140/200 questions, 273 new calls, 14.0 min
+150/200 questions, 293 new calls, 15.0 min
+160/200 questions, 312 new calls, 15.8 min
+170/200 questions, 332 new calls, 16.9 min
+180/200 questions, 352 new calls, 18.2 min
+190/200 questions, 372 new calls, 19.3 min
+200/200 questions, 390 new calls, 20.4 min
+done: 390 new rows -> results/train_pilot/mlx__gemma3-4b-lora.jsonl
+[Sat Nov 21 11:36:27 CST 2026] LORA_PBI_DONE
+/private/tmp/claude-502/-Users-allenwang-1------------Stubhub-during-Travel/788599cd-a6dc-40d3-af85-6742e92463c8/scratchpad/train_resume2.sh: line 7: 31828 Terminated: 15          python -m mlx_lm.server --model "$MODEL" --adapter-path "$1" --port 8080 > "$OUT/server.log" 2>&1
+10/200 questions, 20 new calls, 0.9 min
+20/200 questions, 40 new calls, 1.7 min
+30/200 questions, 60 new calls, 2.6 min
+40/200 questions, 80 new calls, 3.4 min
+50/200 questions, 99 new calls, 4.2 min
+60/200 questions, 119 new calls, 5.0 min
+70/200 questions, 139 new calls, 5.9 min
+80/200 questions, 159 new calls, 6.6 min
+90/200 questions, 177 new calls, 7.4 min
+100/200 questions, 197 new calls, 8.2 min
+110/200 questions, 217 new calls, 9.1 min
+120/200 questions, 237 new calls, 9.9 min
+130/200 questions, 255 new calls, 10.7 min
+140/200 questions, 275 new calls, 11.5 min
+150/200 questions, 295 new calls, 12.4 min
+160/200 questions, 315 new calls, 13.1 min
+170/200 questions, 332 new calls, 13.8 min
+180/200 questions, 350 new calls, 14.5 min
+190/200 questions, 370 new calls, 15.3 min
+200/200 questions, 388 new calls, 16.0 min
+done: 388 new rows -> results/train_pilot/mlx__gemma3-4b-base.jsonl
+[Sat Nov 21 11:52:36 CST 2026] ALL_DONE
