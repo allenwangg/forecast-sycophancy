@@ -22,10 +22,10 @@ information**. Each experiment varies one thing the user supplies:
 | What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 | Fable 5.2 |
 |---|---|---|---|---|---|
 | A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 (clean 0.09) | 0.02 (clean 0.06) |
-| More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.05 | 0.02 |
-| A claimed track record: gap | 0.42 | 0.39 | not run | 0.07 | 0.01 |
+| More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.11 (clean) | 0.04 (clean) |
+| A claimed track record: gap | 0.42 | 0.39 | not run | 0.11 (clean) | 0.08 (clean) |
 | "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 (clean 0.03) | 0.00 (clean 0.02) |
-| A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.10 | 0.09 |
+| A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.14 (clean) | 0.17 (clean) |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
 | The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 (clean 0.75) | 0.33 (clean 0.65) |
 | A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 (clean 0.63) | 0.51 (clean 0.56) |
@@ -44,10 +44,11 @@ What this supports:
    size tested including 27B, and stated certainty is their strongest
    lever (0.76 and 0.72 under "absolutely certain"). A stated reason adds
    little beyond "I disagree" (+0.01 on 4B, +0.05 on 12B). The two Claude
-   models resist social signal far more (in the clean re-run an opinion
-   moves them 0.06 to 0.09 and "I disagree" 0.02 to 0.03; in the original,
-   context-affected runs, certainty and credentials added nothing) and
-   respond to stated reasons.
+   models resist social signal far more: in the clean re-runs an opinion
+   moves them 0.06 to 0.09, "I disagree" 0.02 to 0.03, and "absolutely
+   certain" adds at most 0.02 over "pretty confident" (Opus +0.02, Fable
+   −0.02). Their strongest lever is a stated reason, "because the market
+   is leaning that way", with no number (Opus 0.14, Fable 0.17).
 2. **Resisting pressure is not the same as weighing evidence.** No model
    tested tells a real market price from a fabricated one. In the clean
    re-run, Opus 5.5 moved toward a false price in 183 of 185 cases and
@@ -291,13 +292,34 @@ failures, about 17 minutes):
 - The original Experiment 3 and 4 sections below are kept as run; where
   they differ from this table, use this table.
 
-- **What this does not fix.** The dose-response experiment on the Claude models
-  was run with the contaminated context; its clean re-run is in progress. The clean
-  route still is not the bare model, and the Claude and Gemma runs still
-  use different question sets. Use the clean numbers for Experiments 1, 3
-  and 4, read the Claude dose-response results as provisional until the
-  clean re-run lands, and disregard every statement below about Fable
-  "holding firm" or under-using true quotes.
+**Experiment 2 (dose-response), clean** (Addendum G; 3,200 calls, 0 parse
+failures, about 41 minutes). Opinion gap by wording, paired difference
+from "pretty confident" in brackets:
+
+| Wording | Opus original | Opus clean | Fable original | Fable clean |
+|---|---|---|---|---|
+| weak hunch | 0.02 | 0.02 (−0.07 [−0.09, −0.06]) | −0.01 | 0.03 (−0.03 [−0.04, −0.02]) |
+| pretty confident | 0.08 | 0.09 | 0.02 | 0.06 |
+| absolutely certain | 0.05 | 0.11 (+0.02 [+0.01, +0.03]) | 0.02 | 0.04 (−0.02 [−0.03, −0.00]) |
+| claimed professional forecaster | 0.07 | 0.11 (+0.01 [+0.00, +0.03]) | 0.01 | 0.08 (+0.02 [+0.01, +0.04]) |
+| "because the market is leaning that way" | 0.10 | 0.14 (+0.05 [+0.03, +0.06]) | 0.09 | 0.17 (+0.12 [+0.10, +0.13]) |
+
+- **Holds clean:** a stated reason is the strongest lever on both Claude
+  models (predicted; held), and certainty adds little: "absolutely
+  certain" moves them 0.04 to 0.11, against 0.72 to 0.76 on the Gemmas.
+- **Changed:** on Opus, "absolutely certain" now moves it slightly *more*
+  than "pretty confident" (+0.02), not less. The earlier "louder is less
+  persuasive on Opus" was an artifact and is withdrawn. My pre-registered
+  prediction that strong would not exceed medium held for Fable and
+  failed for Opus. A claimed track record now adds a little on both
+  (+0.01 and +0.02).
+
+- **What this does not fix.** The clean route still is not the bare
+  model, and the Claude and Gemma runs still use different question
+  sets. For the Claude models use the clean numbers in this section for
+  Experiments 1 to 4, and disregard every statement below about Fable
+  "holding firm", Fable under-using true quotes, or "louder is less
+  persuasive" on Opus. The original sections below are kept as run.
 
 ### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 

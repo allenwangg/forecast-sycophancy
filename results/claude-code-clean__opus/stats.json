@@ -1,14 +1,26 @@
 {
   "model": "claude-code-clean:opus",
   "n_questions": 200,
-  "rows": 1200,
+  "rows": 3578,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
     "baseline": 0,
     "baseline_rerun": 0,
+    "baseline_rerun2": 0,
+    "baseline_rerun3": 0,
+    "dose_expert_no": 0,
+    "dose_expert_yes": 0,
+    "dose_reason_no": 0,
+    "dose_reason_yes": 0,
+    "dose_strong_no": 0,
+    "dose_strong_yes": 0,
+    "dose_weak_no": 0,
+    "dose_weak_yes": 0,
     "placebo": 0,
-    "pushback": 0
+    "pushback": 0,
+    "pushback_informed": 0,
+    "pushback_misinformed": 0
   },
   "H1_assertion_gap": {
     "est": 0.091725,
@@ -61,5 +73,139 @@
     "lo": 0.029825,
     "hi": 0.04427562499999999,
     "n": 200
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 7,
+    "move_toward_user_p": {
+      "est": 0.16061139896373056,
+      "lo": 0.1377506476683938,
+      "hi": 0.18546321243523312,
+      "n": 193
+    },
+    "weight_on_cited_price": {
+      "est": 0.748135068762981,
+      "lo": 0.7007594527366058,
+      "hi": 0.7913366904158953,
+      "n": 193
+    },
+    "brier_after_minus_before": {
+      "est": -0.08252356476683938,
+      "lo": -0.11286315621761657,
+      "hi": -0.05341532668393784,
+      "n": 193
+    },
+    "moved_toward_user_share": 0.9948186528497409,
+    "informed_minus_bare_move": {
+      "est": 0.12524870466321245,
+      "lo": 0.10270816062176166,
+      "hi": 0.1499076424870466,
+      "n": 193
+    },
+    "baseline_test_retest_mean_abs_diff": {
+      "est": 0.035750000000000004,
+      "lo": 0.029225000000000004,
+      "hi": 0.04302562499999999,
+      "n": 200
+    }
+  },
+  "E4_misinformed_user": {
+    "move_toward_false_quote_p": {
+      "est": 0.09709189189189191,
+      "lo": 0.08389702702702703,
+      "hi": 0.11128662162162163,
+      "n": 185
+    },
+    "weight_on_false_price": {
+      "est": 0.6252081042475649,
+      "lo": 0.5656082876867798,
+      "hi": 0.6824482079606283,
+      "n": 185
+    },
+    "brier_after_minus_before": {
+      "est": 0.0886907135135135,
+      "lo": 0.06560167972972972,
+      "hi": 0.11349439189189188,
+      "n": 185
+    },
+    "moved_toward_false_quote_share": 0.9891891891891892,
+    "unchanged_share": 0.010810810810810811
+  },
+  "E2_dose_response": {
+    "weak": {
+      "gap": {
+        "est": 0.02045,
+        "lo": 0.010575000000000003,
+        "hi": 0.030475000000000002,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.0660584047206032,
+        "lo": 1.0347689573714125,
+        "hi": 1.0998046984569798,
+        "n": 200
+      }
+    },
+    "medium": {
+      "gap": {
+        "est": 0.091725,
+        "lo": 0.07897375000000001,
+        "hi": 0.10497499999999998,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.361323771310592,
+        "lo": 1.3120168567812998,
+        "hi": 1.415012080547657,
+        "n": 200
+      }
+    },
+    "strong": {
+      "gap": {
+        "est": 0.111775,
+        "lo": 0.09552375,
+        "hi": 0.128901875,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.4425562296026908,
+        "lo": 1.3821925481051214,
+        "hi": 1.5086465603867703,
+        "n": 200
+      }
+    },
+    "expert": {
+      "gap": {
+        "est": 0.1061,
+        "lo": 0.09175000000000001,
+        "hi": 0.12165000000000001,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.436394473029426,
+        "lo": 1.3794151054633677,
+        "hi": 1.4981929420576623,
+        "n": 200
+      }
+    },
+    "reason": {
+      "gap": {
+        "est": 0.138575,
+        "lo": 0.12179875,
+        "hi": 0.15695,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.5142869653927102,
+        "lo": 1.4489281883963463,
+        "hi": 1.5882110247809471,
+        "n": 200
+      }
+    },
+    "strong_minus_weak_gap": {
+      "est": 0.091325,
+      "lo": 0.073949375,
+      "hi": 0.10952500000000001,
+      "n": 200
+    }
   }
 }

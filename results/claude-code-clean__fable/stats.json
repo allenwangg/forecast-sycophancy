@@ -1,14 +1,26 @@
 {
   "model": "claude-code-clean:fable",
   "n_questions": 200,
-  "rows": 1200,
+  "rows": 3576,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
     "baseline": 0,
     "baseline_rerun": 0,
+    "baseline_rerun2": 0,
+    "baseline_rerun3": 0,
+    "dose_expert_no": 0,
+    "dose_expert_yes": 0,
+    "dose_reason_no": 0,
+    "dose_reason_yes": 0,
+    "dose_strong_no": 0,
+    "dose_strong_yes": 0,
+    "dose_weak_no": 0,
+    "dose_weak_yes": 0,
     "placebo": 0,
-    "pushback": 0
+    "pushback": 0,
+    "pushback_informed": 0,
+    "pushback_misinformed": 0
   },
   "H1_assertion_gap": {
     "est": 0.055540000000000006,
@@ -61,5 +73,139 @@
     "lo": 0.026384624999999995,
     "hi": 0.038735124999999995,
     "n": 200
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 8,
+    "move_toward_user_p": {
+      "est": 0.12519791666666666,
+      "lo": 0.10802434895833334,
+      "hi": 0.14306276041666666,
+      "n": 192
+    },
+    "weight_on_cited_price": {
+      "est": 0.6496271749548352,
+      "lo": 0.6012832533592004,
+      "hi": 0.6970096810020422,
+      "n": 192
+    },
+    "brier_after_minus_before": {
+      "est": -0.06309416666666666,
+      "lo": -0.08693984231770832,
+      "hi": -0.04052109778645839,
+      "n": 192
+    },
+    "moved_toward_user_share": 0.9947916666666666,
+    "informed_minus_bare_move": {
+      "est": 0.10030729166666667,
+      "lo": 0.083697265625,
+      "hi": 0.11770885416666667,
+      "n": 192
+    },
+    "baseline_test_retest_mean_abs_diff": {
+      "est": 0.032695,
+      "lo": 0.026204875,
+      "hi": 0.040475125,
+      "n": 200
+    }
+  },
+  "E4_misinformed_user": {
+    "move_toward_false_quote_p": {
+      "est": 0.083125,
+      "lo": 0.07049918478260869,
+      "hi": 0.09691317934782609,
+      "n": 184
+    },
+    "weight_on_false_price": {
+      "est": 0.5568771878096344,
+      "lo": 0.4860976889419107,
+      "hi": 0.6310831565577774,
+      "n": 184
+    },
+    "brier_after_minus_before": {
+      "est": 0.07298714673913043,
+      "lo": 0.052236134646739124,
+      "hi": 0.09592900095108692,
+      "n": 184
+    },
+    "moved_toward_false_quote_share": 0.9945652173913043,
+    "unchanged_share": 0.005434782608695652
+  },
+  "E2_dose_response": {
+    "weak": {
+      "gap": {
+        "est": 0.02633,
+        "lo": 0.018724375,
+        "hi": 0.034015749999999983,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.0903013093671656,
+        "lo": 1.0594538259303048,
+        "hi": 1.1207773514539574,
+        "n": 200
+      }
+    },
+    "medium": {
+      "gap": {
+        "est": 0.055540000000000006,
+        "lo": 0.04349462500000001,
+        "hi": 0.06930512500000001,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.2159355579631628,
+        "lo": 1.1747114706578126,
+        "hi": 1.2664087223369347,
+        "n": 200
+      }
+    },
+    "strong": {
+      "gap": {
+        "est": 0.038939999999999995,
+        "lo": 0.029839624999999995,
+        "hi": 0.04820074999999999,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.1617031558736568,
+        "lo": 1.1293657009953968,
+        "hi": 1.1943094841850161,
+        "n": 200
+      }
+    },
+    "expert": {
+      "gap": {
+        "est": 0.078765,
+        "lo": 0.06468475000000001,
+        "hi": 0.0941755,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.2974973753087276,
+        "lo": 1.2488539938837535,
+        "hi": 1.353153552951385,
+        "n": 200
+      }
+    },
+    "reason": {
+      "gap": {
+        "est": 0.17144500000000001,
+        "lo": 0.1491345,
+        "hi": 0.19624525,
+        "n": 200
+      },
+      "likelihood_ratio": {
+        "est": 1.6349073325103771,
+        "lo": 1.5421076020645546,
+        "hi": 1.741547288309347,
+        "n": 200
+      }
+    },
+    "strong_minus_weak_gap": {
+      "est": 0.012609999999999996,
+      "lo": 0.0013539999999999987,
+      "hi": 0.023565749999999996,
+      "n": 200
+    }
   }
 }
