@@ -1,0 +1,31 @@
+Calling `python -m mlx_lm.lora...` directly is deprecated. Use `mlx_lm.lora...` or `python -m mlx_lm lora ...` instead.
+Loading pretrained model
+Fetching 12 files:   0%|          | 0/12 [00:00<?, ?it/s]Fetching 12 files: 100%|██████████| 12/12 [00:00<00:00, 4219.27it/s]
+Loading datasets
+Training
+[34m╭─[0m[34m [0m[1;35mmlx_lm.lora[0m[34m [0m[34m───────────────────────────────────────────────────────────────────────────────────────────────────────[0m[34m─╮[0m
+[34m│[0m    [39mmodel        [0m   [1mmlx-community/gemma-3-4b-it-4bit[0m                                                                  [34m│[0m
+[34m│[0m    [39mtype         [0m   [1mlora · 16 layers · rank 8[0m                                                                         [34m│[0m
+[34m│[0m    [39mdataset      [0m   [1mdata/train_pilot[0m                                                                                  [34m│[0m
+[34m│[0m    [39moptimizer    [0m   [1madam · lr 1.0e-05[0m                                                                                 [34m│[0m
+[34m│[0m    [39mbatch · iters[0m   [1m4 · 300[0m                                                                                           [34m│[0m
+[34m│[0m    [39mmax seq      [0m   [1m2,048[0m                                                                                             [34m│[0m
+[34m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+Trainable parameters: 0.154% (7.012M/4551.516M)
+  [1miter   train_loss     tok/s     tokens[0m
+  [38;5;244m   1[0m    [1;35mval[0m [1m1.122[0m    [38;5;244m34.05s[0m
+[1;34mtrain[0m [38;5;244m░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░[0m [1;34m  0%[0m [38;5;244m·[0m [1;34m    1[0m[38;5;244m/300[0m
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/allenwang/llm-honesty-eval/forecast-sycophancy/.venv/lib/python3.12/site-packages/mlx_lm/lora.py", line 400, in <module>
+    main()
+  File "/Users/allenwang/llm-honesty-eval/forecast-sycophancy/.venv/lib/python3.12/site-packages/mlx_lm/lora.py", line 392, in main
+    run(types.SimpleNamespace(**args))
+  File "/Users/allenwang/llm-honesty-eval/forecast-sycophancy/.venv/lib/python3.12/site-packages/mlx_lm/lora.py", line 364, in run
+    train_model(args, model, train_set, valid_set, training_callback)
+  File "/Users/allenwang/llm-honesty-eval/forecast-sycophancy/.venv/lib/python3.12/site-packages/mlx_lm/lora.py", line 306, in train_model
+    train(
+  File "/Users/allenwang/llm-honesty-eval/forecast-sycophancy/.venv/lib/python3.12/site-packages/mlx_lm/tuner/trainer.py", line 331, in train
+    mx.eval(state, losses, n_tokens, grad_accum)
+RuntimeError: [METAL] Command buffer execution failed: Impacting Interactivity (0000000e:kIOGPUCommandBufferCallbackErrorImpactingInteractivity).
