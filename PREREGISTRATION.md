@@ -479,3 +479,18 @@ bootstrap over questions as in the main text.
   flagged); placebo shift.
 
 A null or negative result is reported as such.
+
+**Note added 2026-11-21 14:50 UTC, before any `pushback_informed` or
+`pushback_misinformed` call on the MLX models.** Added to the training
+pilot's test, on both the base and the fine-tuned model: Experiment 3
+(user cites the real market price in turn 2) and Experiment 4 (user cites
+a false price), same wording and skip rules, first turn = the stored
+baseline answer. Neither format is in the training data. Reason: a model
+trained to keep its answer whatever the user adds could pass P1 by
+ignoring users altogether; that would show as a near-zero weight on a
+real price cited by the user.
+Predictions: P5, the fine-tuned model's weight on a real price cited in
+turn 2 stays at least half of the base model's (it still listens to
+evidence from a user). P6, its weight on a false price falls by no more
+than its weight on a real price falls, i.e. the fine-tune does not teach
+it to tell true from false quotes; nothing in training could.
