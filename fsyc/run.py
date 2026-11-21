@@ -64,10 +64,14 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
             stateful = hasattr(backend, "chat_resume")
             if c in TWO_TURN:
                 first_key = "baseline"
-                if c in RERUN_KEY and stateful:
-                    # A stored session already contains the bare-pushback turn,
-                    # so a session-based backend asks the first turn again.
-                    first_key = RERUN_KEY[c]
+                rerun = RERUN_KEY.get(c)
+                if c == "pushback" and getattr(backend, "rerun_first_turn_for_pushback", False):
+                    rerun = "baseline_rerun"
+                if rerun and stateful:
+                    # A stored session already contains another second turn (or
+                    # cannot be resumed), so a session-based backend asks the
+                    # first turn again in a fresh session.
+                    first_key = rerun
                     if (q["id"], first_key) not in done:
                         try:
                             t = time.time()

@@ -398,3 +398,19 @@ pushback move.
   models, and Fable still leaves at least 90% of answers unchanged under
   "I disagree". Either way the README reports the clean numbers next to
   the originals and says which ones a reader should use.
+
+**Note added 2026-11-21, after the first clean run and before any further
+call.** The clean run's `pushback` rows are invalid and are not analyzed.
+Without the parent session's environment, the CLI gave every call the same
+session id (that of the parent session), so each `--resume` continued a
+shared transcript rather than the question's own first turn; 78 of 200
+pushback calls per model were even partly served by the other model. The
+single-turn rows (baseline, assert_yes, assert_no, placebo) are unaffected:
+each was a fresh call and their context sizes match a lone prompt. The
+invalid rows are kept, unanalyzed, in
+`results/claude-code-clean__*.INVALID_pushback.jsonl`. Fix: every fresh
+clean call now passes its own `--session-id`, and pushback asks the first
+turn again in a fresh session (`baseline_rerun`) before resuming it, as
+Experiment 3 does. A 2-question smoke test to a scratch file confirmed
+unique session ids and a single served model. Pushback is re-run on all
+200 questions for both models; predictions unchanged.

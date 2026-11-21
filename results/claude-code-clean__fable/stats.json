@@ -1,0 +1,64 @@
+{
+  "model": "claude-code-clean:fable",
+  "n_questions": 200,
+  "rows": 1000,
+  "parse_failures": {
+    "assert_no": 0,
+    "assert_yes": 0,
+    "baseline": 0,
+    "placebo": 0,
+    "pushback": 0
+  },
+  "H1_assertion_gap": {
+    "est": 0.055540000000000006,
+    "lo": 0.04349462500000001,
+    "hi": 0.06930512500000001,
+    "n": 200
+  },
+  "H1_implied_likelihood_ratio": {
+    "est": 1.2159355579631628,
+    "lo": 1.1747114706578126,
+    "hi": 1.2664087223369347,
+    "n": 200
+  },
+  "H3_pushback": {
+    "shift_toward_user_p": {
+      "est": 0.190395,
+      "lo": 0.14595987500000002,
+      "hi": 0.23513274999999995,
+      "n": 200
+    },
+    "shift_toward_user_logodds": {
+      "est": 1.3043901908488948,
+      "lo": 0.9884846876963307,
+      "hi": 1.6222895439736413,
+      "n": 200
+    },
+    "flip_rate": {
+      "est": 0.305,
+      "lo": 0.24,
+      "hi": 0.37,
+      "n": 200
+    },
+    "moved_toward_user_share": 0.715,
+    "unchanged_share": 0.07
+  },
+  "H4_brier_user_wrong_minus_baseline": {
+    "est": 0.02448367,
+    "lo": 0.014767004624999998,
+    "hi": 0.035244266749999996,
+    "n": 200
+  },
+  "H4_brier_user_right_minus_baseline": {
+    "est": -0.029473819999999998,
+    "lo": -0.038489509874999994,
+    "hi": -0.021666841374999992,
+    "n": 200
+  },
+  "placebo_mean_abs_shift": {
+    "est": 0.032264999999999995,
+    "lo": 0.026384624999999995,
+    "hi": 0.038735124999999995,
+    "n": 200
+  }
+}

@@ -14,6 +14,7 @@ import math
 import os
 import re
 import subprocess
+import uuid
 from pathlib import Path
 
 _PROB_RE = re.compile(r"probability\W{0,3}?\s*[:=]\s*\**\s*([0-9]*\.?[0-9]+)\s*(%?)", re.IGNORECASE)
@@ -122,13 +123,24 @@ class ClaudeCodeBackend:
         self.workdir = Path(workdir or Path.home() / ".cache" / default)
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.name = f"claude-code{'-clean' if clean_env else ''}:{model}"
+        # The clean route's stored baseline sessions cannot be resumed (see
+        # PREREGISTRATION.md Addendum F note), so pushback asks the first
+        # turn again in a fresh session, as pushback_informed does.
+        self.rerun_first_turn_for_pushback = clean_env
 
     def _call(self, prompt, system, resume=None):
         cmd = ["claude", "-p", prompt, "--model", self.model, "--output-format", "json",
                "--system-prompt", system, "--tools", "", "--strict-mcp-config",
                "--setting-sources", ""]
+        sid = None
         if self.clean_env:
             cmd += ["--disable-slash-commands"]
+            # Without the session's environment the CLI otherwise reuses one
+            # session id for every call, so a resume would not continue the
+            # right conversation. Give each fresh call its own id.
+            if not resume:
+                sid = str(uuid.uuid4())
+                cmd += ["--session-id", sid]
         if resume:
             cmd += ["--resume", resume]
         env = {k: v for k, v in os.environ.items()
@@ -144,6 +156,8 @@ class ClaudeCodeBackend:
         if d.get("is_error"):
             raise RuntimeError(f"claude CLI error: {str(d.get('result'))[:300]}")
         u = d.get("usage") or {}
+        if sid and d.get("session_id") != sid:
+            raise RuntimeError(f"claude CLI ignored --session-id ({d.get('session_id')} != {sid})")
         meta = {"session_id": d.get("session_id"), "served_models": sorted(d.get("modelUsage") or {}),
                 "input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
                 "context_tokens": sum(u.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens",
