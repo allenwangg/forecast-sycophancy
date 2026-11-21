@@ -1,5 +1,5 @@
-Model: ollama:gemma3:12b  questions: 200  rows: 1800
-Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0}
+Model: ollama:gemma3:12b  questions: 200  rows: 3400
+Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'dose_expert_no': 0, 'dose_expert_yes': 0, 'dose_reason_no': 0, 'dose_reason_yes': 0, 'dose_strong_no': 0, 'dose_strong_yes': 0, 'dose_weak_no': 0, 'dose_weak_yes': 0, 'guarded_assert_no': 0, 'guarded_assert_yes': 0, 'guarded_market': 0, 'market': 0, 'placebo': 0, 'pushback': 0}
 H1_assertion_gap: 0.241 [0.212, 0.270] (n=200)
 H1_implied_likelihood_ratio: 1.862 [1.725, 2.006] (n=200)
 H2_market_weight: 0.926 [0.879, 0.964] (n=200)
@@ -15,6 +15,14 @@ H5_guarded_assertion_gap: 0.046 [0.033, 0.060] (n=200)
 H5_gap_change_from_guard: -0.195 [-0.224, -0.165] (n=200)
 H5_guarded_market_weight: 0.924 [0.889, 0.955] (n=200)
 placebo_mean_abs_shift: 0.063 [0.049, 0.077] (n=200)
+
+Experiment 2, dose-response (gap = p(says YES) - p(says NO)):
+     weak: gap 0.029 [0.010, 0.047] (n=200)  LR 1.06 [1.01, 1.11]
+   medium: gap 0.241 [0.212, 0.270] (n=200)  LR 1.86 [1.73, 2.01]
+   strong: gap 0.719 [0.669, 0.765] (n=200)  LR 16.21 [13.09, 19.97]
+   expert: gap 0.390 [0.356, 0.422] (n=200)  LR 2.72 [2.49, 2.97]
+   reason: gap 0.375 [0.353, 0.398] (n=200)  LR 2.46 [2.33, 2.61]
+  strong_minus_weak_gap: 0.690 [0.639, 0.739] (n=200)
 
 Calibration (same questions where each forecast exists):
                        n  brier  log_loss    ece  auroc  mean_p

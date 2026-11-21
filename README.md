@@ -22,10 +22,10 @@ information**. Each experiment varies one thing the user supplies:
 | What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 | Fable 5.2 |
 |---|---|---|---|---|---|
 | A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 | 0.02 |
-| More certainty ("absolutely certain"): gap | 0.76 | pending | not run | 0.05 | 0.02 |
-| A claimed track record: gap | 0.42 | pending | not run | 0.07 | 0.01 |
+| More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.05 | 0.02 |
+| A claimed track record: gap | 0.42 | 0.39 | not run | 0.07 | 0.01 |
 | "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 | 0.00 |
-| A reason with no number ("the market leans that way"): gap | 0.49 | pending | not run | 0.10 | 0.09 |
+| A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.10 | 0.09 |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
 | The real market price, from the user in turn 2: weight | pending | pending | not run | 0.69 | 0.33 |
 | A false market price, from the user in turn 2: weight | pending | pending | not run | 0.63 | 0.51 |
@@ -38,8 +38,9 @@ What this supports:
 
 1. **Two different failure modes.** The Gemma models respond to social
    signal: an opinion or "I disagree" moves them by 0.23 to 0.48, at every
-   size tested including 27B, and on 4B a stated reason adds nothing
-   (the other sizes are pending). The two Claude models are close to immune to social signal
+   size tested including 27B, and stated certainty is their strongest
+   lever (0.76 and 0.72 under "absolutely certain"). A stated reason adds
+   nothing on 4B and some weight on 12B. The two Claude models are close to immune to social signal
    (certainty, credentials and bare disagreement move them by 0 to 8
    points) and respond to stated reasons.
 2. **Resisting pressure is not the same as weighing evidence.** The Claude
@@ -343,20 +344,39 @@ the user's sentence changes. 1,600 more calls, 0 parse failures.
 
 So on this model the lever is the user's tone of certainty, not who they
 say they are or why they say they believe it. Two of my three predictions
-were wrong. The 12B version of this experiment is queued.
+were wrong.
+
+**Gemma 3 12B (same 200 questions, 1,600 more calls, 0 parse failures).**
+
+| The user says | Opinion gap | Implied likelihood ratio | Paired vs medium |
+|---|---|---|---|
+| weak | 0.03 [0.01, 0.05] | 1.1 [1.0, 1.1] | −0.21 [−0.24, −0.18] |
+| medium (Experiment 1) | 0.24 [0.21, 0.27] | 1.9 [1.7, 2.0] | |
+| strong | 0.72 [0.67, 0.77] | 16 [13, 20] | +0.48 [+0.43, +0.53] |
+| expert | 0.39 [0.36, 0.42] | 2.7 [2.5, 3.0] | +0.15 [+0.12, +0.18] |
+| reason | 0.38 [0.35, 0.40] | 2.5 [2.3, 2.6] | +0.14 [+0.11, +0.16] |
+
+All three predictions held on 12B (E2a strong minus weak +0.69 [+0.64,
++0.74]; E2b and E2c as in the last column). 12B discounts a disowned hunch
+almost completely, which 4B did not, but "absolutely certain" moves it
+nearly as far as 4B (0.72 vs 0.76, likelihood ratio 16). The smaller
+gap 12B showed in Experiment 1 is specific to the "pretty confident"
+wording: raise the user's stated certainty and most of the 4B → 12B
+difference disappears. Unlike 4B, 12B also gives extra weight to a
+claimed credential and to an unverified reason.
 
 ### Experiment 2 on Claude Opus 5.5 and Fable 5.2 (n = 200)
 
 Same four extra wordings, pre-registered in [Addendum E](PREREGISTRATION.md)
 before any call. 1,600 calls per model, 0 parse failures.
 
-| Wording | Opus 5.5 gap | Fable 5.2 gap | Gemma 3 4B gap (other questions) |
+| Wording | Opus 5.5 gap | Fable 5.2 gap | Gemma 3 4B / 12B gap (other questions) |
 |---|---|---|---|
-| weak ("slight hunch... really don't know") | 0.02 [0.01, 0.03] | −0.01 [−0.01, 0.00] | 0.21 |
-| medium ("pretty confident"), Experiment 1 | 0.08 [0.07, 0.09] | 0.02 [0.01, 0.03] | 0.48 |
-| strong ("absolutely certain... no doubt") | 0.05 [0.04, 0.06] | 0.02 [0.01, 0.03] | 0.76 |
-| expert ("professional forecaster...") | 0.07 [0.06, 0.08] | 0.01 [0.01, 0.02] | 0.42 |
-| reason ("because the market is leaning that way") | 0.10 [0.09, 0.11] | 0.09 [0.08, 0.11] | 0.49 |
+| weak ("slight hunch... really don't know") | 0.02 [0.01, 0.03] | −0.01 [−0.01, 0.00] | 0.21 / 0.03 |
+| medium ("pretty confident"), Experiment 1 | 0.08 [0.07, 0.09] | 0.02 [0.01, 0.03] | 0.48 / 0.24 |
+| strong ("absolutely certain... no doubt") | 0.05 [0.04, 0.06] | 0.02 [0.01, 0.03] | 0.76 / 0.72 |
+| expert ("professional forecaster...") | 0.07 [0.06, 0.08] | 0.01 [0.01, 0.02] | 0.42 / 0.39 |
+| reason ("because the market is leaning that way") | 0.10 [0.09, 0.11] | 0.09 [0.08, 0.11] | 0.49 / 0.38 |
 
 - **Louder is not more persuasive on Opus 5.5.** I predicted weak <
   medium < strong. That failed: "absolutely certain, no doubt in my mind"
@@ -375,9 +395,11 @@ before any call. 1,600 calls per model, 0 parse failures.
   (0.49 vs 0.48). Predicted for both Claude models; held.
 - Predicted that every Fable level except possibly "reason" stays below
   0.05; held.
-- So the ordering of what persuades is reversed between the smallest and
-  the largest model here: 4B responds to confidence and not to reasons,
-  Fable responds to reasons and not to confidence, Opus is in between.
+- So what persuades differs sharply between the Gemma and Claude models:
+  both Gemmas respond most to confidence ("absolutely certain" is their
+  strongest lever, 0.76 and 0.72), Fable responds to reasons and not to
+  confidence, Opus is in between. 12B also responds to reasons; 4B does
+  not.
   Caveats as above: different question sets, a product harness for the
   Claude models, one wording per level, and the "reason" here is
   unverifiable. Experiment 4 tests what happens when a stated reason is
@@ -574,8 +596,7 @@ effect that matters, which is whether it also stops the model using evidence.
 
 ## Next steps
 
-1. Experiment 2 on Gemma 3 12B, and Experiments 3 and 4 on 4B and 12B
-   (running). More families and sizes before any claim about scale.
+1. Experiments 3 and 4 on Gemma 3 4B and 12B (running). More families and sizes before any claim about scale.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
 3. Experiments 3 and 4 on the Gemma models (Experiment 3 queued), and a
