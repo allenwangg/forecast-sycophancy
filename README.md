@@ -19,16 +19,16 @@ pushes". A good forecaster should change its answer for information and
 not for pressure, so the quantity of interest is **what a model treats as
 information**. Each experiment varies one thing the user supplies:
 
-| What the user supplies | gemma3:4b | gemma3:12b | Opus 5.5 | Fable 5.2 |
-|---|---|---|---|---|
-| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.08 | 0.02 |
-| More certainty ("absolutely certain"): gap | 0.76 | pending | 0.05 | 0.02 |
-| A claimed track record: gap | 0.42 | pending | 0.07 | 0.01 |
-| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.02 | 0.00 |
-| A reason with no number ("the market leans that way"): gap | 0.49 | pending | 0.10 | 0.09 |
-| The real market price, in the prompt: weight | 0.59 | 0.93 | 0.86 | 0.85 |
-| The real market price, from the user in turn 2: weight | pending | pending | 0.69 | 0.33 |
-| A false market price, from the user in turn 2: weight | not run | not run | 0.63 | 0.51 |
+| What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 | Fable 5.2 |
+|---|---|---|---|---|---|
+| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 | 0.02 |
+| More certainty ("absolutely certain"): gap | 0.76 | pending | not run | 0.05 | 0.02 |
+| A claimed track record: gap | 0.42 | pending | not run | 0.07 | 0.01 |
+| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 | 0.00 |
+| A reason with no number ("the market leans that way"): gap | 0.49 | pending | not run | 0.10 | 0.09 |
+| The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
+| The real market price, from the user in turn 2: weight | pending | pending | not run | 0.69 | 0.33 |
+| A false market price, from the user in turn 2: weight | pending | pending | not run | 0.63 | 0.51 |
 
 Gemma and Claude columns use different question sets and the Claude
 models ran through a product harness, so compare patterns down a column,
@@ -36,9 +36,10 @@ not numbers across the two halves.
 
 What this supports:
 
-1. **Two different failure modes.** The small models respond to social
-   signal: confidence and repetition move them, a stated reason adds
-   nothing. The two Claude models are close to immune to social signal
+1. **Two different failure modes.** The Gemma models respond to social
+   signal: an opinion or "I disagree" moves them by 0.23 to 0.48, at every
+   size tested including 27B, and on 4B a stated reason adds nothing
+   (the other sizes are pending). The two Claude models are close to immune to social signal
    (certainty, credentials and bare disagreement move them by 0 to 8
    points) and respond to stated reasons.
 2. **Resisting pressure is not the same as weighing evidence.** The Claude
@@ -64,24 +65,24 @@ only; whether pressure changes an internal estimate or just the reported
 one needs access to activations. Several pre-registered predictions failed
 across the experiments; each is marked where it occurs.
 
-## Results: Gemma 3 4B and 12B, Claude Opus 5.5 and Fable 5.2 (27B running)
+## Results: Gemma 3 4B, 12B and 27B, Claude Opus 5.5 and Fable 5.2
 
-Same 200 questions and prompts for both models; 1,800 calls each, 0 parse
+Same 200 questions and prompts for all three Gemma models; 1,800 calls each, 0 parse
 failures. Brackets are 95% paired bootstrap CIs over questions.
 
-| | gemma3:4b | gemma3:12b |
-|---|---|---|
-| Opinion gap, p(says YES) − p(says NO) | 0.48 [0.44, 0.52] | 0.24 [0.21, 0.27] |
-| Implied likelihood ratio of one opinion | 3.54 [3.15, 3.97] | 1.86 [1.73, 2.01] |
-| "I disagree": mean move toward user | 0.30 [0.28, 0.32] | 0.23 [0.22, 0.24] |
-| "I disagree": answers crossing 50% (%) | 74 [68, 80] | 46 [38, 52] |
-| Weight on real market price (0 to 1) | 0.59 [0.50, 0.67] | 0.93 [0.88, 0.96] |
-| Brier change when user is wrong | +0.26 [0.22, 0.30] | +0.12 [0.10, 0.15] |
-| Opinion gap with guard prompt | 0.04 [0.02, 0.07] | 0.05 [0.03, 0.06] |
-| Market weight with guard prompt | 0.67 [0.60, 0.74] | 0.92 [0.89, 0.96] |
-| Placebo: mean absolute change | 0.12 [0.10, 0.14] | 0.06 [0.05, 0.08] |
-| Baseline Brier (always-50% = 0.250) | 0.302 | 0.279 |
-| Baseline AUROC | 0.53 | 0.62 |
+| | gemma3:4b | gemma3:12b | gemma3:27b |
+|---|---|---|---|
+| Opinion gap, p(says YES) − p(says NO) | 0.48 [0.44, 0.52] | 0.24 [0.21, 0.27] | 0.40 [0.37, 0.44] |
+| Implied likelihood ratio of one opinion | 3.54 [3.15, 3.97] | 1.86 [1.73, 2.01] | 2.97 [2.71, 3.28] |
+| "I disagree": mean move toward user | 0.30 [0.28, 0.32] | 0.23 [0.22, 0.24] | 0.30 [0.28, 0.31] |
+| "I disagree": answers crossing 50% (%) | 74 [68, 80] | 46 [38, 52] | 64 [58, 71] |
+| Weight on real market price (0 to 1) | 0.59 [0.50, 0.67] | 0.93 [0.88, 0.96] | 0.89 [0.82, 0.95] |
+| Brier change when user is wrong | +0.26 [0.22, 0.30] | +0.12 [0.10, 0.15] | +0.22 [0.19, 0.25] |
+| Opinion gap with guard prompt | 0.04 [0.02, 0.07] | 0.05 [0.03, 0.06] | 0.10 [0.08, 0.12] |
+| Market weight with guard prompt | 0.67 [0.60, 0.74] | 0.92 [0.89, 0.96] | 0.88 [0.84, 0.91] |
+| Placebo: mean absolute change | 0.12 [0.10, 0.14] | 0.06 [0.05, 0.08] | 0.07 [0.05, 0.08] |
+| Baseline Brier (always-50% = 0.250) | 0.302 | 0.279 | 0.290 |
+| Baseline AUROC | 0.53 | 0.62 | 0.61 |
 
 **What changes with scale (4B → 12B).**
 
@@ -105,11 +106,23 @@ failures. Brackets are 95% paired bootstrap CIs over questions.
   vs 0.53). With the market price in the prompt, 12B nearly matches the
   market (0.143 vs 0.136).
 
-This is two models from one family. It is not evidence about a general
-trend with scale. The 27B run adds a third point. Perez et al. (2022) found
-sycophancy on opinion questions *increasing* with model size, so the
-direction here should be read as specific to this family and task until
-shown otherwise.
+**27B breaks the trend.** The largest Gemma is far more deferential than
+12B: opinion gap 0.40 against 0.24, a paired difference of **+0.16
+[+0.13, +0.20]**, and "I disagree" flips 64% of its answers (12B: 46%).
+It weighs the market price about as much as 12B (0.89 vs 0.93) and is
+no more accurate (Brier 0.290, still worse than always-50%). The guard
+prompt still helps a lot (0.40 → 0.10) but leaves twice the gap it
+leaves on the smaller models. Its deference is close to symmetric (+0.22
+for YES, −0.18 for NO; baseline mean 0.41), unlike 12B's.
+
+So across three sizes of one family, sycophancy on forecasts is not
+monotone in size: 0.48, 0.24, 0.40. The scale story from 4B → 12B
+("bigger defers less") did not survive the third point, and I would not
+claim any size trend from these data. This is consistent with Perez et
+al. (2022), who found sycophancy can grow with size, and it means the low
+numbers for the two Claude models are not explained by "large models
+defer less". Why 27B differs from 12B (training mix, instruction tuning,
+quantization at Q4_K_M) is not something this design can tell apart.
 
 Tables and CIs: [`results/comparison.md`](results/comparison.md), from
 `python -m fsyc.compare`.
@@ -508,7 +521,8 @@ produced.
 - **Perez et al. (2022), "Discovering Language Model Behaviors with
   Model-Written Evaluations"** (arXiv:2212.09251) measured sycophancy on
   opinion questions and found it grows with model size. The 4B → 12B → 27B
-  runs here ask the same scale question for forecasts.
+  runs here ask the same scale question for forecasts; the answer is
+  non-monotone (0.48, 0.24, 0.40).
 - **Turpin et al. (2023), "Language Models Don't Always Say What They
   Think"** (arXiv:2305.04388) showed that a suggested answer in the prompt
   biases the model while its stated reasoning never mentions the suggestion.
@@ -560,8 +574,8 @@ effect that matters, which is whether it also stops the model using evidence.
 
 ## Next steps
 
-1. Gemma 3 27B (running): a third point on scale. Experiment 2
-   (dose-response, pre-registered in Addendum A) is also running.
+1. Experiment 2 on Gemma 3 12B, and Experiments 3 and 4 on 4B and 12B
+   (running). More families and sizes before any claim about scale.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
 3. Experiments 3 and 4 on the Gemma models (Experiment 3 queued), and a
