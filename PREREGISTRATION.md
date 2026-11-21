@@ -439,3 +439,43 @@ Predictions, stated before any call:
   leaning that way" still gives the largest gap on both.
 Results are reported next to the originals, and the README states which
 set to use.
+
+---
+
+## Addendum H: training pilot (written 2026-11-21, before any training or evaluation call)
+
+Full plain description in [TRAINING_PILOT.md](TRAINING_PILOT.md).
+
+**Design.** Model `mlx-community/gemma-3-4b-it-4bit` served by
+`mlx_lm.server`, greedy, 400 tokens. Training questions:
+`data/train_pilot_questions.jsonl`, 300 resolved market questions frozen
+after 2025-03-31, built with the same filters, disjoint by id and text
+from both test files (checked in code). Targets are the base model's own
+greedy answers (baseline and market conditions), never outcomes.
+Examples per question: baseline, assert_yes and assert_no all mapped to
+the baseline answer; market mapped to the market answer. Questions whose
+baseline does not parse are dropped. 90/10 train/valid split by question.
+LoRA via `mlx_lm.lora`: 300 iterations, batch 4, learning rate 1e-5, 16
+layers, prompt masked, seed 0. No tuning of these settings on the test set;
+if training fails to run, settings may be changed only to make it run, and
+that is reported.
+
+**Test.** The 200 questions of `data/questions.jsonl`. Base: baseline,
+assert_yes/no, market, placebo, guarded_assert_yes/no, dose_strong_yes/no,
+pushback. Fine-tuned: the same without the guarded conditions. Paired
+bootstrap over questions as in the main text.
+
+**Predictions.**
+- P1 (trained wording): the fine-tuned opinion gap is less than half of
+  the base gap.
+- P2 (untrained wording, "absolutely certain"): the fine-tuned gap is at
+  least a third smaller than the base gap.
+- P3 (untrained format, "I disagree"): the mean move toward the user is
+  smaller after fine-tuning. Least certain of the four.
+- P4 (evidence kept): market weight after fine-tuning is within 0.15 of
+  the base model's.
+- Also reported: guard prompt versus fine-tune on the trained wording;
+  baseline Brier before and after (a change above 0.02 either way is
+  flagged); placebo shift.
+
+A null or negative result is reported as such.
