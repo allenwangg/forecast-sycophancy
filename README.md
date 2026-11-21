@@ -21,10 +21,10 @@ information**. Each experiment varies one thing the user supplies:
 
 | What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 | Fable 5.2 |
 |---|---|---|---|---|---|
-| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 | 0.02 |
+| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 (clean 0.09) | 0.02 (clean 0.06) |
 | More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.05 | 0.02 |
 | A claimed track record: gap | 0.42 | 0.39 | not run | 0.07 | 0.01 |
-| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 | 0.00 |
+| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 (clean 0.03) | 0.00 (clean 0.02) |
 | A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.10 | 0.09 |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
 | The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 | 0.33 |
@@ -32,7 +32,10 @@ information**. Each experiment varies one thing the user supplies:
 
 Gemma and Claude columns use different question sets and the Claude
 models ran through a product harness, so compare patterns down a column,
-not numbers across the two halves.
+not numbers across the two halves. The Claude runs also saw this
+project's own notes in their context; "clean" values come from the
+[robustness check](#robustness-check-the-claude-runs-without-the-projects-context-n--200),
+and the other Claude values have not been re-run cleanly.
 
 What this supports:
 
@@ -41,9 +44,10 @@ What this supports:
    size tested including 27B, and stated certainty is their strongest
    lever (0.76 and 0.72 under "absolutely certain"). A stated reason adds
    little beyond "I disagree" (+0.01 on 4B, +0.05 on 12B). The two Claude
-   models are close to immune to social signal (certainty, credentials and
-   bare disagreement move them by 0 to 8 points) and respond to stated
-   reasons.
+   models resist social signal far more (in the clean re-run an opinion
+   moves them 0.06 to 0.09 and "I disagree" 0.02 to 0.03; in the original,
+   context-affected runs, certainty and credentials added nothing) and
+   respond to stated reasons.
 2. **Resisting pressure is not the same as weighing evidence.** No model
    tested tells a real market price from a fabricated one. A false price
    cost the Claude models 0.07 to 0.08 Brier and the Gemmas 0.17 to 0.19;
@@ -51,7 +55,7 @@ What this supports:
    the Claude models, which resist bare pressure, the exposure is not
    flattery, it is unverifiable claims phrased as evidence.
 3. **The least sycophantic model is not the best-calibrated truster.**
-   Fable 5.2 is the hardest to push, but it under-uses a true quote and
+   In the original runs Fable 5.2 is the hardest to push, but it under-uses a true quote and
    does not discount a false one, so it needs a more honest user
    population than Opus 5.5 for user-supplied evidence to pay.
 4. **A system prompt fixes the first failure and was not tested on the
@@ -143,11 +147,14 @@ caveats first, because this is a weaker setup than the Gemma runs:
   run and published first; the n = 100 figures are in the git history
   and the n = 200 figures below did not change any conclusion except the
   one about beating always-50%, noted below.
-- **A product harness, not the bare model.** Calls go through the Claude
-  Code CLI in headless mode on a subscription login, not the API. Its
-  system prompt is replaced and tools are off, but the CLI adds about 4,300
-  tokens of context per call that I cannot inspect. That context could
-  itself affect how the model treats user opinions.
+- **A product harness, and a contaminated context. Read the robustness
+  check below before using any number in this section.** Calls go through
+  the Claude Code CLI in headless mode on a subscription login, not the
+  API. Its system prompt was replaced and tools were off. But the runs
+  were launched from a cloud Claude Code session, and the evaluated model
+  also received that session's context, including this project's own
+  notes (that it tests whether models hold probabilities under pushback,
+  and some results). The clean re-run removes that.
 - **Not greedy.** One sample at product defaults with private reasoning.
   The placebo row is the noise floor for that.
 - **Not independent.** The assistant that helped build and analyze this
@@ -208,6 +215,55 @@ caveats first, because this is a weaker setup than the Gemma runs:
 
 Reports: [`results/claude-code__opus/report.txt`](results/claude-code__opus/report.txt),
 [`results/claude-code__fable/report.txt`](results/claude-code__fable/report.txt).
+
+### Robustness check: the Claude runs without the project's context (n = 200)
+
+Pre-registered in [Addendum F](PREREGISTRATION.md) after reviewers asked
+whether the harness explains the Claude results. Checking what the model
+actually received found the problem described above: about 6,700 tokens
+of inherited context per call, including this project's notes. The clean
+route starts the CLI with only what it needs to log in; context drops to
+about 800 tokens for a one-question prompt (what remains is the CLI's
+one-line agent identity, the account email and a short environment block;
+`--bare` would remove those but refuses subscription logins, and paid API
+calls were ruled out). Same 200 questions, new result files, originals
+unchanged. 2,400 calls, 0 parse failures, about 35 minutes.
+
+A first attempt at the "I disagree" condition was invalid: without the
+session's environment the CLI reused one session id for every call, so
+follow-ups resumed the wrong conversation. Those rows are kept, unanalyzed,
+in `results/claude-code-clean__*.INVALID_pushback.jsonl`; the fix and the
+re-run were noted in the pre-registration before any further call.
+
+| | Opus 5.5 original | Opus 5.5 clean | Fable 5.2 original | Fable 5.2 clean |
+|---|---|---|---|---|
+| Opinion gap | 0.08 [0.07, 0.09] | 0.09 [0.08, 0.11] | 0.02 [0.01, 0.03] | 0.06 [0.04, 0.07] |
+| Clean minus original (paired) | | +0.01 [+0.00, +0.03] | | +0.04 [+0.02, +0.05] |
+| "I disagree": mean move toward user | 0.02 [0.02, 0.02] | 0.03 [0.02, 0.04] | 0.00 [0.00, 0.00] | 0.02 [0.01, 0.03] |
+| Clean minus original (paired) | | +0.02 [+0.01, +0.02] | | +0.02 [+0.02, +0.03] |
+| "I disagree": answers crossing 50% (%) | 3 | 6 [3, 10] | 0 | 4 [1, 6] |
+| "I disagree": answers left unchanged (%) | 33 | 12 | 99.5 | 15 |
+| Placebo: mean absolute change | 0.04 | 0.04 | 0.03 | 0.03 |
+
+- **The context made both models look less sycophantic, Fable much more
+  so.** Without it, Fable's opinion gap is about three times larger (0.06
+  vs 0.02), and it no longer repeats its first answer in 199 of 200 cases
+  under "I disagree"; it changes 85% of them, by 0.02 on average. Opus
+  changes little.
+- **The main contrast survives.** Clean, both Claude models still move far
+  less than any Gemma: opinion gap 0.06 to 0.09 vs 0.24 to 0.48, and
+  "I disagree" moves 0.02 to 0.03 vs 0.23 to 0.30, flipping 4 to 6% of
+  answers vs 46 to 74%.
+- **Predictions.** Clean values larger than the originals: held for both
+  measures on both models. Clean gap within 0.03 of the original: held
+  for Opus, failed for Fable (+0.04). Fable still unchanged in at least 90%
+  of "I disagree" cases: failed (15%).
+- **What this does not fix.** Experiments 2 to 4 on the Claude models were
+  run with the contaminated context and have not been re-run. The clean
+  route still is not the bare model, and the Claude and Gemma runs still
+  use different question sets. Use the clean numbers for Experiment 1, and
+  read the Claude results of Experiments 2 to 4 as provisional, in
+  particular every statement below about Fable "holding firm".
 
 ### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 
@@ -277,7 +333,7 @@ model's own first answer (so it points the wrong way). Pre-registered in
 
 - **Neither model resists a false quote.** Both moved toward it in
   essentially every case and both ended worse than always answering 50%.
-  A model that holds firm against "I disagree" in 199 of 200 cases
+  A model that, in the original runs, held firm against "I disagree" in 199 of 200 cases
   (Fable) follows a made-up number in 181 of 182.
 - **Predictions.** Opus weight on the false price within 0.15 of its
   weight on the true one: held (0.63 vs 0.69). Same for Fable: **failed**,

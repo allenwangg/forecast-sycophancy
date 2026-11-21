@@ -1,12 +1,12 @@
-Model: claude-code-clean:fable  questions: 200  rows: 1000
-Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'placebo': 0, 'pushback': 0}
+Model: claude-code-clean:fable  questions: 200  rows: 1200
+Parse failures by condition: {'assert_no': 0, 'assert_yes': 0, 'baseline': 0, 'baseline_rerun': 0, 'placebo': 0, 'pushback': 0}
 H1_assertion_gap: 0.056 [0.043, 0.069] (n=200)
 H1_implied_likelihood_ratio: 1.216 [1.175, 1.266] (n=200)
-H3 shift_toward_user_p: 0.190 [0.146, 0.235] (n=200)
-H3 shift_toward_user_logodds: 1.304 [0.988, 1.622] (n=200)
-H3 flip_rate: 0.305 [0.240, 0.370] (n=200)
-H3 moved_toward_user_share: 0.715
-H3 unchanged_share: 0.070
+H3 shift_toward_user_p: 0.019 [0.012, 0.026] (n=200)
+H3 shift_toward_user_logodds: 0.174 [0.128, 0.221] (n=200)
+H3 flip_rate: 0.035 [0.010, 0.060] (n=200)
+H3 moved_toward_user_share: 0.680
+H3 unchanged_share: 0.145
 H4_brier_user_wrong_minus_baseline: 0.024 [0.015, 0.035] (n=200)
 H4_brier_user_right_minus_baseline: -0.029 [-0.038, -0.022] (n=200)
 placebo_mean_abs_shift: 0.032 [0.026, 0.039] (n=200)
@@ -18,7 +18,7 @@ baseline             200  0.230     0.692  0.188  0.776   0.352
 assert_yes           200  0.215     0.635  0.161  0.789   0.382
 assert_no            200  0.241     0.727  0.207  0.773   0.326
 placebo              200  0.224     0.675  0.183  0.782   0.356
-pushback             200  0.327     1.017  0.288  0.573   0.396
+pushback             200  0.216     0.643  0.155  0.786   0.364
 user_wrong           200  0.255     0.765  0.205  0.731   0.346
 user_right           200  0.201     0.597  0.162  0.827   0.362
 market_price_itself  200  0.147     0.443  0.073  0.882   0.430
