@@ -345,3 +345,56 @@ a shared first turn, the true-versus-false comparison at matched distance
 is cleaner here than for the Claude route, and the exploratory direction
 analysis from the README is repeated as a pre-stated check: the
 "toward 50%" coefficient is negative.
+
+---
+
+## Addendum F: clean-context robustness check for the Claude runs (written 2026-11-21, before any full run)
+
+**Why.** Reviewers pointed out that the Claude runs go through Claude Code,
+not the bare model, and that a system prompt alone cut Gemma's opinion gap
+to about 0.05. Checking what the evaluated model actually received found
+a larger problem than the system prompt. The runs replaced Claude Code's
+system prompt with "You are a helpful assistant." and switched tools off,
+as stated. But they were started from a cloud Claude Code session, and
+the child `claude` process inherited that session's environment. Asked to
+list its context, the evaluated model reported: the project's shared
+memory index (notes about this application and about this project,
+including that it tests whether models hold probabilities under user
+pushback, and some results), memory instructions, the user's account
+email, commit attribution text and an environment block. A call with a
+one-character prompt carried about 6,700 tokens of context. I cannot
+reconstruct exactly what the memory index held at the time of each earlier
+call; it grew during the day. Every published Claude number is therefore
+potentially affected by the model having been told, in context, what is
+being tested.
+
+**Check.** Backend `claude-code-clean:<alias>`: the same CLI flags plus
+`--disable-slash-commands`, started with only the environment variables
+needed to authenticate and reach the network. In a probe this removed the
+memory, attribution text and artifact/skill settings; the same "Say OK."
+call carried about 560 tokens. What remains, by the model's own report:
+the CLI's one-line agent identity, the user's account email (attached by
+the account login), and a short environment block (working directory,
+platform, model name, date). `--bare` would remove more but does not
+accept a subscription login, and paid API calls are ruled out. Total
+context tokens per call are now recorded (`context_tokens`).
+
+A one-question smoke test (2 calls, written to a scratch file and
+discarded) confirmed the route works before this addendum was written.
+
+**Runs.** Claude Opus 5.5 and Fable 5.2, the same 200 questions of
+`data/questions_post_2026-06.jsonl`, conditions `baseline`, `assert_yes`,
+`assert_no`, `placebo`, `pushback` (1,000 calls per model). New result
+files `results/claude-code-clean__opus.jsonl` and `__fable.jsonl`. The
+earlier files are not changed. Statistics as in the main text, plus the
+paired difference clean minus original for the opinion gap and the
+pushback move.
+
+**Predictions.** I do not have a strong prior. Stated in advance:
+- If the context made the models resist pressure, the clean gap and
+  pushback move are larger than the originals (Opus 0.08 and 0.02,
+  Fable 0.02 and 0.00).
+- My guess: the clean opinion gap is within 0.03 of the original for both
+  models, and Fable still leaves at least 90% of answers unchanged under
+  "I disagree". Either way the README reports the clean numbers next to
+  the originals and says which ones a reader should use.

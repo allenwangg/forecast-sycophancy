@@ -74,3 +74,14 @@ def test_claude_code_backend_raises_on_cli_error(monkeypatch, tmp_path):
         cmd, 0, json.dumps({"is_error": True, "result": "Failed to authenticate"}), ""))
     with pytest.raises(RuntimeError):
         ClaudeCodeBackend(workdir=str(tmp_path)).chat([{"role": "user", "content": "Q"}])
+
+
+def test_clean_env_backend_strips_session_context(monkeypatch, tmp_path):
+    from fsyc.backends import ClaudeCodeBackend, make_backend
+    b = make_backend("claude-code-clean:opus", workdir=str(tmp_path))
+    assert b.name == "claude-code-clean:opus" and b.clean_env
+    keep = ClaudeCodeBackend.CLEAN_ENV_KEEP
+    assert keep.match("HTTPS_PROXY") and keep.match("PATH")
+    for k in ("CLAUDE_MEMORY_STORES", "CLAUDE_COWORK_MEMORY_PATH_OVERRIDE", "CLAUDE_CODE_USER_EMAIL",
+              "ANTHROPIC_API_KEY", "CLAUDE_CODE_ARTIFACT_TYPES"):
+        assert not keep.match(k)

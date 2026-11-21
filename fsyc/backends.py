@@ -103,20 +103,38 @@ class ClaudeCodeBackend:
 
     NEUTRAL_SYSTEM = "You are a helpful assistant."
 
-    def __init__(self, model: str = "opus", timeout: float = 600.0, workdir: str | None = None):
-        self.model, self.timeout = model, timeout
-        self.workdir = Path(workdir or Path.home() / ".cache" / "fsyc-claude-cli")
+    # Robustness check (PREREGISTRATION.md Addendum F). A cloud Claude Code
+    # session passes its own context (team memory index, account details,
+    # artifact and skill settings) to child `claude` processes through the
+    # environment, and that context reached the evaluated model. The clean
+    # mode starts the CLI with only the variables it needs to authenticate
+    # and reach the network.
+    CLEAN_ENV_KEEP = re.compile(
+        r"^(PATH|HOME|USER|LANG|TERM|NODE_EXTRA_CA_CERTS|SSL_CERT_FILE|HTTPS?_PROXY|https?_proxy|"
+        r"NO_PROXY|no_proxy|GLOBAL_AGENT_[A-Z_]*|ANTHROPIC_BASE_URL|CLAUDE_SESSION_INGRESS_TOKEN_FILE|"
+        r"SESSION_INGRESS_URL|CLAUDE_CODE_REMOTE|CLAUDE_CODE_REMOTE_SESSION_ID|"
+        r"CLAUDE_CODE_ORGANIZATION_UUID|CLAUDE_CODE_ACCOUNT_UUID|CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST)$")
+
+    def __init__(self, model: str = "opus", timeout: float = 600.0, workdir: str | None = None,
+                 clean_env: bool = False):
+        self.model, self.timeout, self.clean_env = model, timeout, clean_env
+        default = "fsyc-claude-cli-clean" if clean_env else "fsyc-claude-cli"
+        self.workdir = Path(workdir or Path.home() / ".cache" / default)
         self.workdir.mkdir(parents=True, exist_ok=True)
-        self.name = f"claude-code:{model}"
+        self.name = f"claude-code{'-clean' if clean_env else ''}:{model}"
 
     def _call(self, prompt, system, resume=None):
         cmd = ["claude", "-p", prompt, "--model", self.model, "--output-format", "json",
                "--system-prompt", system, "--tools", "", "--strict-mcp-config",
                "--setting-sources", ""]
+        if self.clean_env:
+            cmd += ["--disable-slash-commands"]
         if resume:
             cmd += ["--resume", resume]
         env = {k: v for k, v in os.environ.items()
                if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}  # never bill an API account
+        if self.clean_env:
+            env = {k: v for k, v in env.items() if self.CLEAN_ENV_KEEP.match(k)}
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout,
                            cwd=self.workdir, env=env)
         try:
@@ -128,6 +146,8 @@ class ClaudeCodeBackend:
         u = d.get("usage") or {}
         meta = {"session_id": d.get("session_id"), "served_models": sorted(d.get("modelUsage") or {}),
                 "input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
+                "context_tokens": sum(u.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens",
+                                                              "cache_read_input_tokens")),
                 "num_turns": d.get("num_turns")}
         return d.get("result") or "", meta
 
@@ -210,6 +230,8 @@ def make_backend(spec: str, **kw):
         return AnthropicBackend(name, **kw)
     if kind == "claude-code":
         return ClaudeCodeBackend(name or "opus", **kw)
+    if kind == "claude-code-clean":
+        return ClaudeCodeBackend(name or "opus", clean_env=True, **kw)
     if kind == "simulated":
         return SimulatedForecaster()
     raise ValueError(f"unknown backend {spec!r}")
