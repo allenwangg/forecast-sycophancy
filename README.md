@@ -610,6 +610,63 @@ pressure", not "how good a forecaster it is".
 | Model, user wrong | 0.565 | 1.652 | 0.643 | 0.117 |
 
 
+## Training pilot: can a small fine-tune fix it? (Gemma 3 4B, n = 200)
+
+Plain explanation: [TRAINING_PILOT.md](TRAINING_PILOT.md). Pre-registered
+in Addendum H (and the note after it) before any training or test call.
+Consistency training: LoRA on Gemma 3 4B (4-bit MLX), 300 training
+questions disjoint from the test set, targets are the model's own answers
+with no opinion in the prompt, plus its own answers with the market price
+so it is not taught to ignore evidence. Trained on the "pretty confident"
+wording only. 300 steps, 49 minutes on a laptop, free. Base and
+fine-tuned model compared on the same 200 test questions and the same
+inference stack (so these base numbers differ slightly from the Ollama
+ones above). Training needed three restarts after macOS GPU watchdog
+crashes; the settings never changed, and the crash logs are in
+`results/train_pilot/`.
+
+| | Base | Fine-tuned | Paired change |
+|---|---|---|---|
+| Opinion gap, trained wording ("pretty confident") | 0.53 [0.48, 0.57] | 0.26 [0.21, 0.31] | −0.27 [−0.32, −0.21] |
+| Opinion gap, untrained wording ("absolutely certain") | 0.82 [0.77, 0.86] | 0.46 [0.40, 0.51] | −0.36 [−0.42, −0.29] |
+| "I disagree" in turn 2 (untrained format): move | 0.33 [0.30, 0.35] | 0.29 [0.27, 0.32] | −0.04 [−0.07, −0.00] |
+| "I disagree": answers crossing 50% | 57% | 52% | |
+| Market price in the prompt: weight | 0.60 [0.51, 0.68] | 0.49 [0.39, 0.58] | −0.11 [−0.20, −0.03] |
+| Real price cited by the user in turn 2: weight | 0.67 [0.61, 0.74] | 0.65 [0.58, 0.73] | |
+| False price cited by the user in turn 2: weight | 0.72 [0.66, 0.78] | 0.77 [0.71, 0.83] | |
+| For comparison: base + one-paragraph guard prompt, opinion gap | 0.16 [0.13, 0.20] | | fine-tune minus guard: +0.09 [+0.04, +0.15] |
+| Baseline Brier (always-50% = 0.250) | 0.382 | 0.332 | −0.05 [−0.09, −0.01] |
+
+Against the predictions:
+
+- **P1, trained wording halves: held, narrowly** (0.26 against a
+  threshold of 0.26; the CI spans both sides).
+- **P2, untrained wording shrinks by a third: held.** "Absolutely
+  certain" lost 44% of its effect though it never appeared in training,
+  so the model learned more than to ignore one sentence.
+- **P3, "I disagree" in a second turn shrinks: held, but barely**
+  (−0.04). Single-turn training did not carry over to a conversation.
+- **P4, market weight within 0.15: held**, but it fell 0.11, with a CI
+  reaching −0.20. Some of the gain came from listening less to
+  everything in the prompt.
+- **P5, still uses a real price a user cites: held** (0.65 vs 0.67).
+- **P6, does not learn to tell false from real: held.** It follows a
+  false price as much as before (0.77). Nothing in training could teach
+  that.
+- Not predicted: the one-paragraph system prompt beat the fine-tune on the
+  trained wording (0.16 vs 0.26). The fine-tune also changed the model's
+  answers to plain questions (mean absolute change 0.14) and its baseline
+  Brier improved by 0.05; it is still far worse than always-50%, so I
+  read that as a shift in its answers rather than better forecasting.
+
+What this shows: a cheap, outcome-free fine-tune on 300 questions cuts
+a small model's response to stated opinions by about half, and the effect
+transfers to a stronger wording it never saw. It does not transfer to
+multi-turn pushback, it costs some weight on real evidence, a system
+prompt does better on the trained case, and it does nothing about
+fabricated evidence. One model, one run, one set of settings, chosen in
+advance and not tuned.
+
 ## Design
 
 **Data.** 200 binary questions from [ForecastBench](https://github.com/forecastingresearch/forecastbench-datasets)

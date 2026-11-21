@@ -52,3 +52,20 @@ this is the best method. One model, one run, one set of settings, 300
 training questions. The base model here is the 4-bit MLX version, not the
 Ollama model used in the main results, so base and fine-tuned are compared
 with each other on the same stack, not with the Ollama numbers.
+
+## Result (Nov 21)
+
+Full table in the [README](README.md#training-pilot-can-a-small-fine-tune-fix-it-gemma-3-4b-n--200).
+
+- The trained wording's effect halved (0.53 to 0.26), and the untrained
+  "absolutely certain" wording fell by 44% (0.82 to 0.46).
+- "I disagree" in a second turn barely changed (0.33 to 0.29).
+- It still uses a real market price a user cites, and still follows a fake
+  one just as much.
+- It listens somewhat less to the market price in the prompt (0.60 to 0.49).
+- The one-paragraph system prompt still does better on the trained case (0.16).
+
+In one sentence: fine-tuning taught the model to discount stated opinions,
+including a wording it never saw, but not to resist repeated pushback in a
+conversation and not to check evidence, and a system prompt was cheaper and
+stronger.

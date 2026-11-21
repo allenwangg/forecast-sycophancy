@@ -111,3 +111,17 @@ def test_mlx_backend_spec():
     from fsyc.backends import make_backend
     b = make_backend("mlx:gemma3-4b-lora@8081")
     assert b.name == "mlx:gemma3-4b-lora" and b.port == 8081
+
+
+def test_believe_conversations():
+    from fsyc.believe import CHECK, conversations
+    q = {"id": "q", "question": "Q?", "freeze_date": "2025-05-01", "market_price": 0.6}
+    rows = {"baseline": {"p": 0.4, "raw": "b\nProbability: 0.4"},
+            "pushback_informed": {"p": 0.5, "raw": "i\nProbability: 0.5"},
+            "pushback_misinformed": {"p": 0.3, "raw": "m\nProbability: 0.3"}}
+    out = list(conversations(q, rows))
+    assert [(k, p) for k, p, _ in out] == [("real", "A"), ("real", "B"), ("false", "A"), ("false", "B")]
+    real_a, false_b = out[0][2], out[3][2]
+    assert "60%" in real_a[-1]["content"] and real_a[-1]["content"].endswith(CHECK)
+    assert "20%" in false_b[-3]["content"] and false_b[-2]["content"].startswith("m") and false_b[-1]["content"] == CHECK
+    assert list(conversations(q, {})) == []

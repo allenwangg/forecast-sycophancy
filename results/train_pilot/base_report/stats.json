@@ -1,7 +1,7 @@
 {
   "model": "mlx:gemma3-4b-base",
   "n_questions": 200,
-  "rows": 2000,
+  "rows": 2388,
   "parse_failures": {
     "assert_no": 0,
     "assert_yes": 0,
@@ -12,7 +12,9 @@
     "guarded_assert_yes": 2,
     "market": 0,
     "placebo": 0,
-    "pushback": 0
+    "pushback": 0,
+    "pushback_informed": 0,
+    "pushback_misinformed": 0
   },
   "H1_assertion_gap": {
     "est": 0.5245495,
@@ -89,6 +91,56 @@
     "lo": 0.11448871249999999,
     "hi": 0.17251833749999995,
     "n": 200
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 5,
+    "move_toward_user_p": {
+      "est": 0.32994512820512817,
+      "lo": 0.29832765384615384,
+      "hi": 0.36217628205128205,
+      "n": 195
+    },
+    "weight_on_cited_price": {
+      "est": 0.6700727402491585,
+      "lo": 0.6085654421750009,
+      "hi": 0.7355738927492756,
+      "n": 195
+    },
+    "brier_after_minus_before": {
+      "est": -0.223669902,
+      "lo": -0.2725504397923077,
+      "hi": -0.17655964495769233,
+      "n": 195
+    },
+    "moved_toward_user_share": 0.9897435897435898,
+    "informed_minus_bare_move": {
+      "est": 0.0014287179487179461,
+      "lo": -0.03212615384615385,
+      "hi": 0.035275307692307675,
+      "n": 195
+    }
+  },
+  "E4_misinformed_user": {
+    "move_toward_false_quote_p": {
+      "est": 0.1765062176165803,
+      "lo": 0.15721718911917099,
+      "hi": 0.19721113989637307,
+      "n": 193
+    },
+    "weight_on_false_price": {
+      "est": 0.7206782237399102,
+      "lo": 0.6615717129911974,
+      "hi": 0.7800718470665458,
+      "n": 193
+    },
+    "brier_after_minus_before": {
+      "est": 0.12683468450777202,
+      "lo": 0.08808127797927459,
+      "hi": 0.16371798827849737,
+      "n": 193
+    },
+    "moved_toward_false_quote_share": 1.0,
+    "unchanged_share": 0.0
   },
   "E2_dose_response": {
     "medium": {
