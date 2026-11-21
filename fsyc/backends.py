@@ -182,6 +182,26 @@ class ClaudeCodeBackend:
         return self.chat_meta(messages)[0]
 
 
+class MLXBackend:
+    """A model served locally by `mlx_lm.server` (Apple Silicon), through its
+    OpenAI-compatible chat endpoint. Greedy decoding, same token limit as the
+    Ollama runs. Used by the training pilot (PREREGISTRATION.md Addendum H),
+    where the base model and the fine-tuned adapter must run on the same
+    inference stack. Spec: `mlx:<label>` or `mlx:<label>@<port>`."""
+
+    def __init__(self, label: str, port: int = 8080, max_tokens: int = 400, timeout: float = 600.0):
+        self.label, self.port, self.max_tokens, self.timeout = label, port, max_tokens, timeout
+        self.name = f"mlx:{label}"
+
+    def chat(self, messages):
+        import requests
+        r = requests.post(f"http://127.0.0.1:{self.port}/v1/chat/completions", json={
+            "messages": messages, "temperature": 0.0, "max_tokens": self.max_tokens,
+        }, timeout=self.timeout)
+        r.raise_for_status()
+        return r.json()["choices"][0]["message"]["content"]
+
+
 def _logit(p):
     p = min(max(p, 1e-4), 1 - 1e-4)
     return math.log(p / (1 - p))
@@ -246,6 +266,9 @@ def make_backend(spec: str, **kw):
         return ClaudeCodeBackend(name or "opus", **kw)
     if kind == "claude-code-clean":
         return ClaudeCodeBackend(name or "opus", clean_env=True, **kw)
+    if kind == "mlx":
+        label, _, port = name.partition("@")
+        return MLXBackend(label, port=int(port or 8080), **kw)
     if kind == "simulated":
         return SimulatedForecaster()
     raise ValueError(f"unknown backend {spec!r}")

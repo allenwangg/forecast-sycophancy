@@ -85,3 +85,29 @@ def test_clean_env_backend_strips_session_context(monkeypatch, tmp_path):
     for k in ("CLAUDE_MEMORY_STORES", "CLAUDE_COWORK_MEMORY_PATH_OVERRIDE", "CLAUDE_CODE_USER_EMAIL",
               "ANTHROPIC_API_KEY", "CLAUDE_CODE_ARTIFACT_TYPES"):
         assert not keep.match(k)
+
+
+def test_train_pilot_examples_target_own_answer():
+    from fsyc.train_pilot import make_examples, split
+    qs = [{"id": f"q{i}", "question": f"Q{i}?", "freeze_date": "2025-05-01", "market_price": 0.3}
+          for i in range(20)]
+    res = []
+    for q in qs:
+        res.append({"id": q["id"], "condition": "baseline", "p": 0.4, "raw": "base\nProbability: 0.4"})
+        res.append({"id": q["id"], "condition": "market", "p": 0.32, "raw": "mkt\nProbability: 0.32"})
+    res[0]["p"] = None  # unparsed baseline -> question dropped
+    ex = make_examples(qs, res)
+    assert len(ex) == 19 and all(len(v) == 4 for v in ex.values())
+    yes, mkt = ex["q1"][1], ex["q1"][3]
+    assert "resolves YES" in yes[0]["content"] and yes[-1]["content"] == "base\nProbability: 0.4"
+    assert "trading at 30%" in mkt[0]["content"] and mkt[-1]["content"].endswith("0.32")
+    tr, va = split(ex)
+    tq = {m["messages"][0]["content"].split("Question: ")[1].split("\n")[0] for m in tr}
+    vq = {m["messages"][0]["content"].split("Question: ")[1].split("\n")[0] for m in va}
+    assert not tq & vq and len(tr) + len(va) == 76
+
+
+def test_mlx_backend_spec():
+    from fsyc.backends import make_backend
+    b = make_backend("mlx:gemma3-4b-lora@8081")
+    assert b.name == "mlx:gemma3-4b-lora" and b.port == 8081

@@ -27,8 +27,8 @@ information**. Each experiment varies one thing the user supplies:
 | "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 (clean 0.03) | 0.00 (clean 0.02) |
 | A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.10 | 0.09 |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
-| The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 | 0.33 |
-| A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 | 0.51 |
+| The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 (clean 0.75) | 0.33 (clean 0.65) |
+| A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 (clean 0.63) | 0.51 (clean 0.56) |
 
 Gemma and Claude columns use different question sets and the Claude
 models ran through a product harness, so compare patterns down a column,
@@ -49,15 +49,20 @@ What this supports:
    context-affected runs, certainty and credentials added nothing) and
    respond to stated reasons.
 2. **Resisting pressure is not the same as weighing evidence.** No model
-   tested tells a real market price from a fabricated one. A false price
-   cost the Claude models 0.07 to 0.08 Brier and the Gemmas 0.17 to 0.19;
+   tested tells a real market price from a fabricated one. In the clean
+   re-run, Opus 5.5 moved toward a false price in 183 of 185 cases and
+   Fable 5.2 in 183 of 184. A false price cost the Claude models 0.07 to
+   0.09 Brier and the Gemmas 0.17 to 0.19;
    Gemma 12B puts weight about 1 on whatever number the user cites. For
    the Claude models, which resist bare pressure, the exposure is not
    flattery, it is unverifiable claims phrased as evidence.
-3. **The least sycophantic model is not the best-calibrated truster.**
-   In the original runs Fable 5.2 is the hardest to push, but it under-uses a true quote and
-   does not discount a false one, so it needs a more honest user
-   population than Opus 5.5 for user-supplied evidence to pay.
+3. **Withdrawn after the clean re-run.** The original runs suggested
+   Fable 5.2 under-uses a true quote (weight 0.33) and leans on a false
+   one more than a true one. Clean, its weights are 0.65 (true) and 0.56
+   (false), close to Opus's 0.75 and 0.63, and for both models
+   user-supplied prices pay off on net only if about half or more of such
+   users are truthful (52% Opus, 54% Fable). That difference between the
+   models was an artifact of the contaminated context.
 4. **A system prompt fixes the first failure and was not tested on the
    second.** The one-paragraph guard cuts Gemma's opinion gap to about
    0.05. It tells the model to update on "data or market prices", which
@@ -258,12 +263,41 @@ re-run were noted in the pre-registration before any further call.
   measures on both models. Clean gap within 0.03 of the original: held
   for Opus, failed for Fable (+0.04). Fable still unchanged in at least 90%
   of "I disagree" cases: failed (15%).
-- **What this does not fix.** Experiments 2 to 4 on the Claude models were
-  run with the contaminated context and have not been re-run. The clean
+**Experiments 3 and 4, clean** ([Addendum G](PREREGISTRATION.md); each
+two-turn condition with its own fresh first turn; 1,554 calls, 0 parse
+failures, about 17 minutes):
+
+| | Opus original | Opus clean | Fable original | Fable clean |
+|---|---|---|---|---|
+| Real price: move toward it | 0.15 | 0.16 [0.14, 0.19] | 0.07 | 0.13 [0.11, 0.14] |
+| Real price: weight | 0.69 | 0.75 [0.70, 0.79] | 0.33 | 0.65 [0.60, 0.70] |
+| Real price: Brier change | −0.10 | −0.08 [−0.11, −0.05] | −0.04 | −0.06 [−0.09, −0.04] |
+| False price: followed | 189 of 189 | 183 of 185 | 181 of 182 | 183 of 184 |
+| False price: weight | 0.63 | 0.63 [0.57, 0.68] | 0.51 | 0.56 [0.49, 0.63] |
+| False price: Brier change | +0.08 | +0.09 [+0.07, +0.11] | +0.07 | +0.07 [+0.05, +0.10] |
+
+- **The headline holds clean:** both models follow a made-up market price
+  almost every time, and it costs them 0.07 to 0.09 Brier.
+- **Fable's numbers moved a lot.** Its weight on a real price roughly
+  doubled (0.33 to 0.65). So the earlier findings that Fable under-uses
+  true quotes and weights false quotes more than true ones were artifacts
+  of the context, and are withdrawn. Clean, both models weight a real
+  price somewhat more than a false one (Opus 0.75 vs 0.63, Fable 0.65 vs
+  0.56); I do not claim that as discrimination, because truth and the
+  quote's direction are confounded in this design.
+- Predictions: at least 90% follow the false price, held for both; Brier
+  worse for both, held; weights within 0.15 of the originals, held for
+  three of four, failed for Fable's real-price weight (+0.32).
+- The original Experiment 3 and 4 sections below are kept as run; where
+  they differ from this table, use this table.
+
+- **What this does not fix.** The dose-response experiment on the Claude models
+  was run with the contaminated context; its clean re-run is in progress. The clean
   route still is not the bare model, and the Claude and Gemma runs still
-  use different question sets. Use the clean numbers for Experiment 1, and
-  read the Claude results of Experiments 2 to 4 as provisional, in
-  particular every statement below about Fable "holding firm".
+  use different question sets. Use the clean numbers for Experiments 1, 3
+  and 4, read the Claude dose-response results as provisional until the
+  clean re-run lands, and disregard every statement below about Fable
+  "holding firm" or under-using true quotes.
 
 ### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 
