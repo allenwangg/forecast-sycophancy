@@ -27,8 +27,8 @@ information**. Each experiment varies one thing the user supplies:
 | "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 | 0.00 |
 | A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.10 | 0.09 |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
-| The real market price, from the user in turn 2: weight | pending | pending | not run | 0.69 | 0.33 |
-| A false market price, from the user in turn 2: weight | pending | pending | not run | 0.63 | 0.51 |
+| The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 | 0.33 |
+| A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 | 0.51 |
 
 Gemma and Claude columns use different question sets and the Claude
 models ran through a product harness, so compare patterns down a column,
@@ -40,14 +40,16 @@ What this supports:
    signal: an opinion or "I disagree" moves them by 0.23 to 0.48, at every
    size tested including 27B, and stated certainty is their strongest
    lever (0.76 and 0.72 under "absolutely certain"). A stated reason adds
-   nothing on 4B and some weight on 12B. The two Claude models are close to immune to social signal
-   (certainty, credentials and bare disagreement move them by 0 to 8
-   points) and respond to stated reasons.
-2. **Resisting pressure is not the same as weighing evidence.** The Claude
-   models' sensitivity to reasons does not depend on the reason being
-   true. A fabricated market price moved both about as much as a real one
-   and cost about 0.07 to 0.08 Brier. For these models the exposure is
-   not flattery, it is unverifiable claims phrased as evidence.
+   little beyond "I disagree" (+0.01 on 4B, +0.05 on 12B). The two Claude
+   models are close to immune to social signal (certainty, credentials and
+   bare disagreement move them by 0 to 8 points) and respond to stated
+   reasons.
+2. **Resisting pressure is not the same as weighing evidence.** No model
+   tested tells a real market price from a fabricated one. A false price
+   cost the Claude models 0.07 to 0.08 Brier and the Gemmas 0.17 to 0.19;
+   Gemma 12B puts weight about 1 on whatever number the user cites. For
+   the Claude models, which resist bare pressure, the exposure is not
+   flattery, it is unverifiable claims phrased as evidence.
 3. **The least sycophantic model is not the best-calibrated truster.**
    Fable 5.2 is the hardest to push, but it under-uses a true quote and
    does not discount a false one, so it needs a more honest user
@@ -252,8 +254,8 @@ against the model's lean, the other toward the market. For this route the
 first turn had to be asked again in a fresh session; the re-asked baseline
 differs from the original by 0.035 to 0.04 on average (non-greedy
 decoding), which is smaller than both informed moves but larger than
-Fable's bare move. One run per question. Gemma 3 4B and 12B versions are
-queued.
+Fable's bare move. One run per question. The Gemma 3 4B and 12B
+versions are below.
 
 ### Experiment 4: the misinformed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 
@@ -312,6 +314,39 @@ experiments used separately re-asked first turns, and I would not read
 the residual as the model preferring false quotes. The clean follow-up
 randomizes the direction and distance of the quote independently of
 truth.
+
+### Experiments 3 and 4 on Gemma 3 4B and 12B (n = 200)
+
+Same two second-turn conditions on the Gemma questions, pre-registered in
+Addendum D and the note after Addendum E. For these models both
+experiments reuse the stored greedy baseline as the first turn, so true
+and false quotes are paired on the same first answer. Questions where the
+first answer already equals the price, or where clipping leaves no room
+for a false quote, are skipped by design (4B: 3 and 4; 12B: 8 and 14).
+0 parse failures.
+
+| | 4B | 12B |
+|---|---|---|
+| "I disagree" (Exp. 1): move | 0.30 | 0.23 |
+| Real price from the user: move | 0.31 [0.28, 0.34] | 0.28 [0.25, 0.31] |
+| Informed minus bare move | +0.01 [−0.03, +0.04] | +0.05 [+0.02, +0.08] |
+| Weight on the real price | 0.67 [0.61, 0.72] | 0.95 [0.92, 0.99] |
+| Weight on a false price | 0.83 [0.77, 0.89] | 0.97 [0.93, 1.00] |
+| Brier: before → real price → false price | 0.303 → 0.151 → 0.494 | 0.284 → 0.135 → 0.460 |
+
+- **The Gemmas move the same distance whether or not the user gives a
+  reason.** "I disagree" alone moves 4B 0.30; adding the real market price
+  moves it 0.31. On 12B the reason adds 0.05. Predicted (Addendum D, P4);
+  held.
+- **12B adopts any number the user cites.** Weight about 1 on both the
+  true and the false price. A real quote takes it to market accuracy; a
+  false one takes it to Brier 0.46, far worse than always-50%.
+- Predictions in the note after Addendum E: weight on the false price
+  within 0.15 of the true one held for 12B (+0.02) and narrowly failed for
+  4B (+0.17); Brier worse for both, held. The pre-stated check that both
+  models move less for a quote pushing toward 50% **failed** on both
+  Gemmas (the coefficient is positive, and noisy on 4B), so the direction
+  effect seen on the Claude models is not general.
 
 ### Experiment 2: dose-response on Gemma 3 4B
 
@@ -596,11 +631,11 @@ effect that matters, which is whether it also stops the model using evidence.
 
 ## Next steps
 
-1. Experiments 3 and 4 on Gemma 3 4B and 12B (running). More families and sizes before any claim about scale.
+1. More families and sizes before any claim about scale, and Experiments
+   2 to 4 on 27B.
 2. Claude through the API rather than a product harness, and more than one
    Claude size.
-3. Experiments 3 and 4 on the Gemma models (Experiment 3 queued), and a
-   version of Experiment 4 that randomizes the direction and distance of
+3. A version of Experiment 4 that randomizes the direction and distance of
    the quote independently of whether it is true. Then the same with a
    search tool, to see whether a model that can check a quote does.
 4. Mechanism: a linear probe on hidden states for "the model's answer before
