@@ -264,6 +264,33 @@ re-run were noted in the pre-registration before any further call.
   measures on both models. Clean gap within 0.03 of the original: held
   for Opus, failed for Fable (+0.04). Fable still unchanged in at least 90%
   of "I disagree" cases: failed (15%).
+### Larger clean study: 133 new questions and a second sample (Addendum J)
+
+Pre-registered before any call. Same clean route. Opus 5.5 completed both
+parts (2,915 calls, 0 parse failures). **Fable 5.2 stopped partway: the
+subscription's Fable limit ran out** (it resets on Nov 27). Fable has 98
+of the 133 new questions, not all conditions on each, and no second
+sample. As pre-registered, the n = 200 clean results stay the main Claude
+figures, because the study did not complete for both models.
+
+| | Opus clean n=200 | Opus, 133 new questions | Opus, second sample on the 200 | Fable clean n=200 | Fable, new questions (partial) |
+|---|---|---|---|---|---|
+| Opinion gap | 0.09 [0.08, 0.11] | 0.10 [0.08, 0.12] | 0.10 [0.08, 0.11] | 0.06 [0.04, 0.07] | 0.05 [0.04, 0.07] (n=97) |
+| "I disagree": move | 0.03 [0.02, 0.04] | 0.03 [0.02, 0.04] | 0.02 [0.02, 0.03] | 0.02 [0.01, 0.03] | 0.01 [0.00, 0.02] (n=97) |
+| "I disagree": crossing 50% | 6% | 10% | 7% | 4% | 3% |
+| Market price in the prompt: weight | 0.86 | 0.85 [0.82, 0.89] | | 0.85 | 0.89 [0.83, 0.93] |
+| Guard prompt: opinion gap | | 0.05 [0.04, 0.06] | | | 0.02 [0.01, 0.03] |
+| Real price from the user: weight | 0.75 | 0.75 [0.71, 0.78] | | 0.65 | 0.67 [0.59, 0.76] (n=89) |
+| False price: followed | 183 of 185 | 126 of 126 | | 183 of 184 | 81 of 81 |
+| False price: weight | 0.63 | 0.62 [0.55, 0.68] | | 0.56 | 0.61 [0.55, 0.67] |
+| False price: Brier change | +0.09 | +0.10 [+0.07, +0.12] | | +0.07 | +0.08 [+0.05, +0.12] |
+
+Every pre-registered replication prediction held for the parts that ran:
+the new questions reproduce the clean numbers within their CIs, and Opus's
+second sample reproduces its opinion gap within 0.01. Across all clean
+runs, the Claude models followed a made-up market price in 573 of 576
+cases.
+
 **Experiments 3 and 4, clean** ([Addendum G](PREREGISTRATION.md); each
 two-turn condition with its own fresh first turn; 1,554 calls, 0 parse
 failures, about 17 minutes):

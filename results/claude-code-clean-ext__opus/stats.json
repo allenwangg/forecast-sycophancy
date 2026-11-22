@@ -1,0 +1,152 @@
+{
+  "model": "claude-code-clean:opus",
+  "n_questions": 133,
+  "rows": 1715,
+  "parse_failures": {
+    "assert_no": 0,
+    "assert_yes": 0,
+    "baseline": 0,
+    "baseline_rerun": 0,
+    "baseline_rerun2": 0,
+    "baseline_rerun3": 0,
+    "guarded_assert_no": 0,
+    "guarded_assert_yes": 0,
+    "market": 0,
+    "placebo": 0,
+    "pushback": 0,
+    "pushback_informed": 0,
+    "pushback_misinformed": 0
+  },
+  "H1_assertion_gap": {
+    "est": 0.09910526315789474,
+    "lo": 0.08014887218045112,
+    "hi": 0.11868458646616542,
+    "n": 133
+  },
+  "H1_implied_likelihood_ratio": {
+    "est": 1.3714307987063428,
+    "lo": 1.3031003803716594,
+    "hi": 1.4415008041269464,
+    "n": 133
+  },
+  "H2_market_weight": {
+    "est": 0.8520440755167968,
+    "lo": 0.8150035269259452,
+    "hi": 0.8858595434599577,
+    "n": 133
+  },
+  "H2_brier_market_minus_baseline": {
+    "est": -0.08526748120300752,
+    "lo": -0.12192262218045112,
+    "hi": -0.050185751879699265,
+    "n": 133
+  },
+  "H3_pushback": {
+    "shift_toward_user_p": {
+      "est": 0.030902255639097747,
+      "lo": 0.020036654135338346,
+      "hi": 0.042030075187969924,
+      "n": 133
+    },
+    "shift_toward_user_logodds": {
+      "est": 0.22858464081155408,
+      "lo": 0.16413800143849794,
+      "hi": 0.29411475868736164,
+      "n": 133
+    },
+    "flip_rate": {
+      "est": 0.09774436090225563,
+      "lo": 0.05263157894736842,
+      "hi": 0.15037593984962405,
+      "n": 133
+    },
+    "moved_toward_user_share": 0.7293233082706767,
+    "unchanged_share": 0.12030075187969924
+  },
+  "H4_brier_user_wrong_minus_baseline": {
+    "est": 0.04131954887218045,
+    "lo": 0.026288031015037596,
+    "hi": 0.05743955357142856,
+    "n": 133
+  },
+  "H4_brier_user_right_minus_baseline": {
+    "est": -0.04855457894736843,
+    "lo": -0.06378611560150375,
+    "hi": -0.03396126898496243,
+    "n": 133
+  },
+  "H5_guarded_assertion_gap": {
+    "est": 0.04932330827067669,
+    "lo": 0.037368421052631585,
+    "hi": 0.0618815789473684,
+    "n": 133
+  },
+  "H5_gap_change_from_guard": {
+    "est": -0.049781954887218045,
+    "lo": -0.06966184210526316,
+    "hi": -0.029819360902255645,
+    "n": 133
+  },
+  "placebo_mean_abs_shift": {
+    "est": 0.04518796992481201,
+    "lo": 0.036127819548872175,
+    "hi": 0.05477537593984961,
+    "n": 133
+  },
+  "E3_informed_user": {
+    "n_skipped_already_at_market": 7,
+    "move_toward_user_p": {
+      "est": 0.1527460317460317,
+      "lo": 0.12494305555555554,
+      "hi": 0.1831349206349206,
+      "n": 126
+    },
+    "weight_on_cited_price": {
+      "est": 0.7455680112407708,
+      "lo": 0.7047755800217466,
+      "hi": 0.7842335817021845,
+      "n": 126
+    },
+    "brier_after_minus_before": {
+      "est": -0.07413066666666668,
+      "lo": -0.111621976984127,
+      "hi": -0.038930881944444454,
+      "n": 126
+    },
+    "moved_toward_user_share": 1.0,
+    "informed_minus_bare_move": {
+      "est": 0.11290476190476191,
+      "lo": 0.08588015873015871,
+      "hi": 0.14199900793650785,
+      "n": 126
+    },
+    "baseline_test_retest_mean_abs_diff": {
+      "est": 0.0369172932330827,
+      "lo": 0.029209586466165397,
+      "hi": 0.045452067669172924,
+      "n": 133
+    }
+  },
+  "E4_misinformed_user": {
+    "move_toward_false_quote_p": {
+      "est": 0.10612698412698411,
+      "lo": 0.08901587301587303,
+      "hi": 0.12388948412698414,
+      "n": 126
+    },
+    "weight_on_false_price": {
+      "est": 0.6160576268403475,
+      "lo": 0.5469711719201413,
+      "hi": 0.6789332064430665,
+      "n": 126
+    },
+    "brier_after_minus_before": {
+      "est": 0.0945785238095238,
+      "lo": 0.06617059325396825,
+      "hi": 0.12369684206349203,
+      "n": 126
+    },
+    "moved_toward_false_quote_share": 1.0,
+    "unchanged_share": 0.0
+  }
+}
