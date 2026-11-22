@@ -565,3 +565,16 @@ least 90% of cases, weights on real and false price within 0.15 of the
 clean values. The second sample reproduces the opinion gap within 0.02.
 Results that do not fit are reported as such, and the README states the
 pooled numbers as the main Claude figures only if both parts complete.
+
+## Addendum K: larger Gemma study (written 2026-11-22, before any call)
+
+`data/questions_ext.jsonl`: 200 more questions (100 YES, 100 NO) built
+with the original rules (cutoff 2025-03-31, pinned snapshot, seed 0, at
+most 40% per source) from questions not used anywhere in this project.
+Gemma 3 4B and 12B through Ollama, greedy, as in the main runs.
+Conditions: baseline, assert_yes, assert_no, placebo, market, pushback.
+Files `results/ollama__gemma3__{4b,12b}__ext.jsonl`; reported alone and
+pooled with the original 200 (n = 400 per model).
+Predictions: each model's opinion gap, pushback move and market weight on
+the new questions fall within 0.05 of its original value (4B gap 0.48,
+12B 0.24; moves 0.30 and 0.23; market weights 0.59 and 0.93).
