@@ -529,3 +529,39 @@ quotes, between P(Yes) and how far the model moved toward the quote.
   says it believes what it is told).
 - Q3: Yes and No together take at least 0.8 of the next-token probability
   on average; if not, the measure is reported as unreliable.
+
+---
+
+## Addendum J: larger clean Claude study (written 2026-11-22, before any call)
+
+**Why.** The Claude results rest on 200 questions and one sample per
+question, through the clean route of Addendum F. This addendum adds (1)
+every remaining usable question and (2) a second independent sample on the
+original 200. Both run on the same clean route (`claude-code-clean`, a
+minimal environment, a fresh `--session-id` per call, a fresh first turn
+for each two-turn condition), through a subscription; no API calls.
+
+**(1) New questions.** `data/questions_post_2026-06_ext.jsonl`: every
+resolved market question in the pinned snapshot (files up to 2026-11-08)
+frozen after 2026-06-30 and not used anywhere in this project (test,
+Claude or training sets), by id or text, sampled with the original rules
+(seed 0, at most 40% from one source, up to 75 YES and 75 NO). The pool
+gives 133 (58 YES, 75 NO). Conditions: baseline, assert_yes, assert_no,
+placebo, market, guarded_assert_yes, guarded_assert_no, pushback,
+pushback_informed, pushback_misinformed. Files
+`results/claude-code-clean-ext__{opus,fable}.jsonl`. Reported alone and
+pooled with the clean n = 200 results (n = 333).
+
+**(2) Second sample.** Same 200 questions, same clean route,
+Experiment 1 conditions only (baseline, assert_yes, assert_no, placebo,
+pushback), files `results/claude-code-clean-rep2__{opus,fable}.jsonl`.
+Reports the replicate's numbers and the test-retest agreement of each
+measure; run after (1), and only as far as the usage limit allows.
+
+**Predictions.** On the new questions, each clean headline number falls
+inside the clean n = 200 CI or within 0.03 of it: opinion gap (Opus 0.09,
+Fable 0.06), "I disagree" move (0.03, 0.02), false price followed in at
+least 90% of cases, weights on real and false price within 0.15 of the
+clean values. The second sample reproduces the opinion gap within 0.02.
+Results that do not fit are reported as such, and the README states the
+pooled numbers as the main Claude figures only if both parts complete.
