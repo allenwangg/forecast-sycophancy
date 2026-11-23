@@ -14,6 +14,12 @@ questions.
 
 ## At a glance
 
+**Short version:** [REPORT.md](REPORT.md), two pages. Every number in it and
+in the summary table below is checked against the raw results by
+[tests/test_claims.py](tests/test_claims.py).
+
+![Claude resists pressure but follows a made-up price almost as readily as a real one](figures/summary.png)
+
 - **Headline.** Claude Opus 5.5 and Fable 5.2 barely move under bare social
   pressure, but they follow a market price the user makes up almost every
   time. In the pre-registered clean runs (n = 200) that is 183 of 185 cases
@@ -48,7 +54,7 @@ information**. Each experiment varies one thing the user supplies:
 | "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.03 | 0.02 |
 | A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.14 | 0.17 |
 | The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.85&nbsp;† | 0.89&nbsp;† |
-| The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.75 | 0.65 |
+| The real market price, from the user in turn 2: weight | 0.66 | 0.95 | not run | 0.75 | 0.65 |
 | A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 | 0.56 |
 
 Gemma and Claude columns use different question sets and the Claude
@@ -75,7 +81,7 @@ What this supports:
    −0.02). Their strongest lever is a stated reason, "because the market
    is leaning that way", with no number (Opus 0.14, Fable 0.17).
 2. **Resisting pressure is not the same as weighing evidence.** No model
-   tested tells a real market price from a fabricated one. In the clean
+   tested rejects a fabricated market price. In the clean
    re-run, Opus 5.5 moved toward a false price in 183 of 185 cases and
    Fable 5.2 in 183 of 184; adding the 133 new questions of Addendum J,
    573 of 576. A false price cost the Claude models 0.07 to
@@ -83,6 +89,12 @@ What this supports:
    Gemma 12B puts weight about 1 on whatever number the user cites. For
    the Claude models, which resist bare pressure, the exposure is not
    flattery, it is unverifiable claims phrased as evidence.
+   Exploratory, not pre-registered: on the questions asked both ways, the
+   Claude models put somewhat less weight on the made-up price than on the
+   real one (paired difference +0.14 [+0.07, +0.21] for Opus, +0.11
+   [+0.03, +0.19] for Fable; [results/summary.md](results/summary.md)).
+   Truth is confounded with the quote's direction and distance in this
+   design, so that gap is not evidence that the models detect false prices.
 3. **Withdrawn after the clean re-run.** The original runs suggested
    Fable 5.2 under-uses a true quote (weight 0.33) and leans on a false
    one more than a true one. Clean, its weights are 0.65 (true) and 0.56
@@ -498,7 +510,7 @@ for a false quote, are skipped by design (4B: 3 and 4; 12B: 8 and 14).
 | "I disagree" (Exp. 1): move | 0.30 | 0.23 |
 | Real price from the user: move | 0.31 [0.28, 0.34] | 0.28 [0.25, 0.31] |
 | Informed minus bare move | +0.01 [−0.03, +0.04] | +0.05 [+0.02, +0.08] |
-| Weight on the real price | 0.67 [0.61, 0.72] | 0.95 [0.92, 0.99] |
+| Weight on the real price | 0.66 [0.61, 0.72] | 0.95 [0.92, 0.99] |
 | Weight on a false price | 0.83 [0.77, 0.89] | 0.97 [0.93, 1.00] |
 | Brier: before → real price → false price | 0.303 → 0.151 → 0.494 | 0.284 → 0.135 → 0.460 |
 
@@ -778,7 +790,8 @@ against ground truth before they are used on a real model.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                       # 41 tests, no network, no model
+python -m pytest -q                       # 55 tests, no network, no model
+python -m fsyc.summary                    # results/summary.md and figures/summary.png
 ollama pull gemma3:4b && ollama pull gemma3:12b && ollama pull gemma3:27b
 bash scripts/reproduce.sh                 # data snapshot -> Gemma runs -> reports
 
@@ -805,6 +818,7 @@ produced.
 | `fsyc/run.py` | Questions × conditions → JSONL, resumable |
 | `fsyc/analyze.py` | Pre-registered statistics, tables, figures |
 | `fsyc/compare.py` | Side-by-side models, paired difference in opinion gap |
+| `fsyc/summary.py` | Headline numbers across runs, pooled count with a Wilson interval, summary figure |
 | `fsyc/metrics.py` | Brier, log loss, ECE, Murphy decomposition, AUROC, bootstrap |
 
 ## Related work, and what this adds
@@ -847,14 +861,14 @@ effect that matters, which is whether it also stops the model using evidence.
   Opus 5.5 and Fable 5.2) went through a product harness with context I cannot see, on
   200 different questions; a clean API run on the same questions is the
   obvious next step and was not done for cost.
-- **One wording per condition.** Each condition is a single phrasing. The
-  effect size depends on wording ("pretty confident" vs. "certain", with or
-  without a stated credential). A natural extension is a dose-response over
-  assertion strength.
+- **Wording.** Experiment 2 varied the wording of the opinion (five
+  phrasings); every other condition, including the cited prices, uses a
+  single phrasing, and effect sizes depend on wording.
 - **Greedy decoding.** One deterministic answer per prompt. This makes paired
   differences clean but says nothing about sampling variance. The placebo
-  shows the model is sensitive to small irrelevant prompt changes (mean
-  |Δp| = 0.12), which is its own robustness finding.
+  shows Gemma 3 4B is sensitive to small irrelevant prompt changes (mean
+  |Δp| = 0.12; 0.03 to 0.07 for the other models), which is its own
+  robustness finding.
 - **The guard prompt was written once and tested once.** It is not tuned,
   but it may still fit
   to this setup. It should be tested on held-out wordings and other

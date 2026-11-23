@@ -23,6 +23,10 @@ context (see the README's robustness check).
 
 Other files:
 
+- `summary.md`: the headline numbers across runs in one place, with the
+  pooled false-price count and the paired real-vs-made-up comparison
+  (`python -m fsyc.summary`, which also draws `figures/summary.png`).
+  Generated; checked against the raw rows by `tests/test_claims.py`.
 - `comparison.md` / `comparison.json`: the three Gemma models side by side
   (`python -m fsyc.compare`).
 - `comparison_claude.md` / `comparison_claude.json`: the **original** Claude
