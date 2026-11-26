@@ -58,33 +58,55 @@ class OllamaBackend:
 
 
 class AnthropicBackend:
-    """Claude through the Messages API. Credentials come from the environment
-    (ANTHROPIC_API_KEY or an `ant auth login` profile).
+    """Claude through the Messages API, with no harness: no system prompt
+    unless the condition has one, no tools. Credentials come from the
+    environment (ANTHROPIC_API_KEY or an `ant auth login` profile).
 
     Differences from the local runs, all forced by the API on current models:
     sampling parameters (temperature) are not accepted, so decoding is the
     API default rather than greedy, and thinking cannot be switched off, so
-    the model reasons privately before the visible answer. `max_tokens`
-    covers both. No fallback model is configured: a refusal is recorded as a
-    row with no probability, never answered by a different model.
+    the model reasons privately before the visible answer. `effort` is set
+    explicitly (each model's API default, see PREREGISTRATION.md Addendum L)
+    and `max_tokens` covers thinking plus the answer. No fallback model is
+    configured: a refusal is recorded as a row with no probability, never
+    answered by a different model.
     """
 
-    def __init__(self, model: str, max_tokens: int = 4000):
-        import anthropic
-        self.client = anthropic.Anthropic(max_retries=5)
+    DEFAULT_EFFORT = {"claude-opus-5-5": "medium", "claude-haiku-5-5": "medium"}
+
+    def __init__(self, model: str, max_tokens: int = 8000, effort: str | None = None, client=None):
+        if client is None:
+            import anthropic
+            client = anthropic.Anthropic(max_retries=5)
+        self.client = client
         self.model, self.max_tokens = model, max_tokens
+        self.effort = effort or self.DEFAULT_EFFORT.get(model, "high")
         self.name = f"anthropic:{model}"
 
-    def chat_meta(self, messages):
+    def params(self, messages):
+        """Request body for one condition; also used by the batch runner."""
         system = "\n".join(m["content"] for m in messages if m["role"] == "system")
         msgs = [m for m in messages if m["role"] != "system"]
-        kw = {"system": system} if system else {}
-        r = self.client.messages.create(model=self.model, max_tokens=self.max_tokens,
-                                        messages=msgs, **kw)
+        p = {"model": self.model, "max_tokens": self.max_tokens, "messages": msgs,
+             "output_config": {"effort": self.effort}}
+        if system:
+            p["system"] = system
+        return p
+
+    @staticmethod
+    def read(r):
+        """(visible text, metadata) from a Messages API response."""
         text = "".join(b.text for b in r.content if getattr(b, "type", "") == "text")
+        sd = getattr(r, "stop_details", None)
         meta = {"stop_reason": r.stop_reason, "served_model": r.model,
+                "refusal_category": getattr(sd, "category", None) if sd else None,
                 "input_tokens": r.usage.input_tokens, "output_tokens": r.usage.output_tokens}
         return text, meta
+
+    def chat_meta(self, messages):
+        r = self.client.messages.create(**self.params(messages))
+        text, meta = self.read(r)
+        return text, {**meta, "effort": self.effort}
 
     def chat(self, messages):
         return self.chat_meta(messages)[0]
@@ -261,7 +283,8 @@ def make_backend(spec: str, **kw):
     if kind == "ollama":
         return OllamaBackend(name, **kw)
     if kind == "anthropic":
-        return AnthropicBackend(name, **kw)
+        model, _, effort = name.partition("@")   # anthropic:<model>[@<effort>]
+        return AnthropicBackend(model, effort=effort or None, **kw)
     if kind == "claude-code":
         return ClaudeCodeBackend(name or "opus", **kw)
     if kind == "claude-code-clean":

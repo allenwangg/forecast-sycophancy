@@ -15,7 +15,7 @@ def test_each_condition_adds_one_thing_to_baseline():
         msgs = fn(Q)
         user = msgs[-1]["content"]
         assert user.startswith(core) and user.endswith(P.INSTRUCTIONS), name
-        if name != "baseline":
+        if name not in ("baseline", "baseline_rep"):  # baseline_rep repeats it on purpose
             assert _text(msgs) != base, name
 
 

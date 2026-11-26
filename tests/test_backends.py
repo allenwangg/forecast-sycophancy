@@ -30,8 +30,11 @@ def test_anthropic_backend_request_shape(monkeypatch):
     assert text.endswith("Probability: 0.3")           # thinking blocks are not part of the answer
     assert seen["system"] == "S" and seen["messages"] == [{"role": "user", "content": "U"}]
     assert "temperature" not in seen and "fallbacks" not in seen
-    assert meta == {"stop_reason": "end_turn", "served_model": "fake-model",
-                    "input_tokens": 11, "output_tokens": 7}
+    assert seen["output_config"] == {"effort": "high"}   # unknown model: the API default, explicit
+    assert meta == {"stop_reason": "end_turn", "served_model": "fake-model", "refusal_category": None,
+                    "input_tokens": 11, "output_tokens": 7, "effort": "high"}
+    assert make_backend("anthropic:claude-opus-5-5").effort == "medium"
+    assert make_backend("anthropic:claude-fable-5-2@low").effort == "low"
 
 
 def test_claude_code_backend_commands(monkeypatch, tmp_path):
