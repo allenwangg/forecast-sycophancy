@@ -348,6 +348,46 @@ from "pretty confident" in brackets:
   "holding firm", Fable under-using true quotes, or "louder is less
   persuasive" on Opus. The original sections below are kept as run.
 
+### Experiment 5: a false quote that points the right way (Addendum M, n = 200)
+
+Pre-registered before the run. Experiments 3 and 4 confound truth with
+direction: the true quote always points toward the market, the false one
+away. Here the false quote points the same way as the real price, at 0.5
+or 1.75 times its distance from the model's first answer (fixed per
+question), and is skipped if it lands within 0.05 of the real price.
+Clean Claude Code route, subscription usage only, 630 calls, 0 parse
+failures. The true and false quotes continue separately sampled first
+answers, so the comparison is paired on question, not on first answer.
+
+| | Opus 5.5 | Fable 5.2 |
+|---|---|---|
+| Questions with both a true and a same-direction false quote | 115 | 116 |
+| Same-direction false quote: followed | 115 of 115 | 116 of 116 |
+| Weight on the true quote (same questions) | 0.75 | 0.67 |
+| Weight on the same-direction false quote | 0.60 | 0.45 |
+| **True minus false (primary)** | **0.16 [0.07, 0.24]** | **0.23 [0.07, 0.36]** |
+| Split: false quote halfway to the real price, weight true / false | 0.76 / 0.74 (n=69) | 0.64 / 0.71 (n=66) |
+| Split: false quote past the real price, weight true / false | 0.74 / 0.58 (n=46) | 0.74 / 0.41 (n=50) |
+| Fraction of distance moved, effect of falseness (controls: direction, distance; all three quotes) | −0.01 [−0.04, +0.02] | +0.02 [−0.01, +0.05] |
+| Brier change after the same-direction false quote | −0.10 | −0.07 |
+
+- **The pre-registered prediction failed** (|difference| < 0.10): both
+  models put less weight on these false quotes than on true ones.
+- **The whole gap comes from the false quotes placed past the real
+  price.** When the false quote sits between the model's answer and the
+  real price, the weights are the same (0.76 vs 0.74; 0.64 vs 0.71). Past
+  it, the quote is further away and more extreme, and the models move a
+  similar share of the distance in probability terms but a smaller share
+  in log-odds. In the pooled regression, falseness has no effect once
+  direction and distance are controlled.
+- **Reading:** no evidence that either model detects a false price as
+  such. Both follow every false quote; they discount large or extreme
+  jumps and quotes that pull them toward 50%, true or not. Because these
+  false quotes point the right way, they improved accuracy here; a false
+  quote is harmful when its direction is wrong (Experiment 4).
+- Not answered: the bare model without the Claude Code harness
+  (Addendum L, not funded).
+
 ### Experiment 3: the informed user (Claude Opus 5.5 and Fable 5.2, n = 200)
 
 The control Experiment 1 was missing. Same second-turn slot as the bare
