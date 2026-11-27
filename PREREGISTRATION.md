@@ -665,3 +665,34 @@ results. Then the full batches. Every number reported with its bootstrap
 CI next to the harness number on the same questions; failed predictions
 named as such. If spending stops at the budget cap, results are reported
 as partial and the harness numbers stay the main ones.
+
+## Addendum M: Experiment 5 on the subscription route (written 2026-11-27, before any full run)
+
+**Why.** The API study of Addendum L was not funded. This runs its one
+new experiment, the decoupled quote, on the clean Claude Code route of
+Addenda F and G instead, using subscription usage only. A three-question
+smoke test (Opus, 6 calls, kept out of `results/`) checked the plumbing
+first; its numbers are not part of any result.
+
+**Route and conditions.** `claude-code-clean:opus` and
+`claude-code-clean:fable`, the same 200 questions, condition
+`pushback_false_same` only, each with its own fresh first turn
+(`baseline_rerun4`), as Experiments 3 and 4 did on this route. Files
+`results/claude-code-clean-e5__{opus,fable}.jsonl`. About 400 calls per
+model.
+
+**Analysis.** The primary and secondary measures of Addendum L, comparing
+these rows with the existing clean `pushback_informed` and
+`pushback_misinformed` rows on the same questions. Weaker than Addendum
+L in one way, stated in every report: the true and the false quote
+continue different first answers (separately sampled), so the comparison
+is paired on question, not on first answer.
+
+**Predictions.** Same as Addendum L, point 2: |weight on the true quote
+minus weight on the same-direction false quote| < 0.10, and the
+same-direction false quote followed in at least 90% of cases.
+
+**Not answered by this addendum.** Whether the results hold for the bare
+model without the Claude Code harness (about 800 tokens of CLI identity,
+account and environment text remain), and sampling noise on a shared
+first turn. Those still need Addendum L.

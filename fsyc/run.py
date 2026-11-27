@@ -23,7 +23,8 @@ from .prompts import ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, baseline, se
 TWO_TURN = ("pushback", "pushback_informed", "pushback_misinformed", "pushback_false_same")
 # Session-based backends re-ask the first turn in a fresh session for these,
 # because a stored session already contains an earlier second turn.
-RERUN_KEY = {"pushback_informed": "baseline_rerun", "pushback_misinformed": "baseline_rerun2"}
+RERUN_KEY = {"pushback_informed": "baseline_rerun", "pushback_misinformed": "baseline_rerun2",
+             "pushback_false_same": "baseline_rerun4"}
 
 
 def placebo_number(qid: str) -> int:
