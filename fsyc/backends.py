@@ -57,6 +57,15 @@ class OllamaBackend:
         return (r.json().get("message") or {}).get("content", "")
 
 
+def api_client():
+    """Anthropic client for the eval. Prefers FSYC_ANTHROPIC_API_KEY: in a
+    Claude Code cloud environment a plain ANTHROPIC_API_KEY would also be
+    picked up by Claude Code itself and bill the session to the API."""
+    import anthropic
+    key = os.environ.get("FSYC_ANTHROPIC_API_KEY")
+    return anthropic.Anthropic(max_retries=5, **({"api_key": key} if key else {}))
+
+
 class AnthropicBackend:
     """Claude through the Messages API, with no harness: no system prompt
     unless the condition has one, no tools. Credentials come from the
@@ -76,8 +85,7 @@ class AnthropicBackend:
 
     def __init__(self, model: str, max_tokens: int = 8000, effort: str | None = None, client=None):
         if client is None:
-            import anthropic
-            client = anthropic.Anthropic(max_retries=5)
+            client = api_client()
         self.client = client
         self.model, self.max_tokens = model, max_tokens
         self.effort = effort or self.DEFAULT_EFFORT.get(model, "high")

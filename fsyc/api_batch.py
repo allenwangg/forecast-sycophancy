@@ -140,8 +140,8 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
-    import anthropic
-    client = anthropic.Anthropic(max_retries=5)
+    from .backends import api_client
+    client = api_client()
     be = AnthropicBackend(a.model, effort=a.effort, client=client)
     qs = load_jsonl(a.questions)[: a.limit]
     out = Path(a.out or f"results/api__{a.model}.jsonl")

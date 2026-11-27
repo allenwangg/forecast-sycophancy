@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Bare-API study (PREREGISTRATION.md Addendum L). Needs ANTHROPIC_API_KEY.
+# Bare-API study (PREREGISTRATION.md Addendum L). Needs FSYC_ANTHROPIC_API_KEY
+# (or ANTHROPIC_API_KEY when run outside a Claude Code environment).
 # Usage: bash scripts/api_rerun.sh pilot   # 10 questions per model, live, about $3 total
 #        bash scripts/api_rerun.sh full    # both models, batches, see the pilot's estimate
 set -euo pipefail
