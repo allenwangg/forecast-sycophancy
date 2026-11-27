@@ -12,6 +12,33 @@ rules (Brier, log loss) price the damage. An honest forecaster should move
 for evidence and not for social pressure. Here both are tested on the same
 questions.
 
+## At a glance
+
+**Short version:** [REPORT.md](REPORT.md), two pages. Every number in it and
+in the summary table below is checked against the raw results by
+[tests/test_claims.py](tests/test_claims.py).
+
+![Claude resists pressure but follows a made-up price almost as readily as a real one](figures/summary.png)
+
+- **Headline.** Claude Opus 5.5 and Fable 5.2 barely move under bare social
+  pressure, but they follow a market price the user makes up almost every
+  time. In the pre-registered clean runs (n = 200) that is 183 of 185 cases
+  for Opus and 183 of 184 for Fable; counting the replication on 133 new
+  questions as well, **573 of 576**. A made-up price costs them 0.07 to 0.10
+  Brier.
+- **Pre-registered.** Every hypothesis and addendum was committed before the
+  calls it covers ([PREREGISTRATION.md](PREREGISTRATION.md)). Failed
+  predictions are marked where they occur.
+- **A contamination found and fixed.** The first Claude runs saw this
+  project's own notes in their context. Every Claude number in the summary
+  below comes from clean re-runs, and claims the clean runs did not support
+  are withdrawn ([robustness check](#robustness-check-the-claude-runs-without-the-projects-context-n--200)).
+- **Replicated.** 133 new questions and a second Opus sample reproduce the
+  clean numbers within their CIs ([Addendum J](#larger-clean-study-133-new-questions-and-a-second-sample-addendum-j)).
+  Fable's part stopped at its usage limit and is still to finish.
+- **What is next:** [NEXT_EXPERIMENTS.md](NEXT_EXPERIMENTS.md). Which result
+  file is which: [results/README.md](results/README.md).
+
 ## What the experiments add up to
 
 The question is not "does the model change its answer when the user
@@ -19,23 +46,27 @@ pushes". A good forecaster should change its answer for information and
 not for pressure, so the quantity of interest is **what a model treats as
 information**. Each experiment varies one thing the user supplies:
 
-| What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 | Fable 5.2 |
+| What the user supplies | gemma3:4b | gemma3:12b | gemma3:27b | Opus 5.5 (clean) | Fable 5.2 (clean) |
 |---|---|---|---|---|---|
-| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.08 (clean 0.09) | 0.02 (clean 0.06) |
-| More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.11 (clean) | 0.04 (clean) |
-| A claimed track record: gap | 0.42 | 0.39 | not run | 0.11 (clean) | 0.08 (clean) |
-| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.02 (clean 0.03) | 0.00 (clean 0.02) |
-| A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.14 (clean) | 0.17 (clean) |
-| The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.86 | 0.85 |
-| The real market price, from the user in turn 2: weight | 0.67 | 0.95 | not run | 0.69 (clean 0.75) | 0.33 (clean 0.65) |
-| A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 (clean 0.63) | 0.51 (clean 0.56) |
+| A bare opinion ("pretty confident"): gap | 0.48 | 0.24 | 0.40 | 0.09 | 0.06 |
+| More certainty ("absolutely certain"): gap | 0.76 | 0.72 | not run | 0.11 | 0.04 |
+| A claimed track record: gap | 0.42 | 0.39 | not run | 0.11 | 0.08 |
+| "I disagree" in turn 2: move | 0.30 | 0.23 | 0.30 | 0.03 | 0.02 |
+| A reason with no number ("the market leans that way"): gap | 0.49 | 0.38 | not run | 0.14 | 0.17 |
+| The real market price, in the prompt: weight | 0.59 | 0.93 | 0.89 | 0.85&nbsp;† | 0.89&nbsp;† |
+| The real market price, from the user in turn 2: weight | 0.66 | 0.95 | not run | 0.75 | 0.65 |
+| A false market price, from the user in turn 2: weight | 0.83 | 0.97 | not run | 0.63 | 0.56 |
 
 Gemma and Claude columns use different question sets and the Claude
 models ran through a product harness, so compare patterns down a column,
-not numbers across the two halves. The Claude runs also saw this
-project's own notes in their context; "clean" values come from the
-[robustness check](#robustness-check-the-claude-runs-without-the-projects-context-n--200),
-and the other Claude values have not been re-run cleanly.
+not numbers across the two halves. The Claude columns are the clean
+re-runs on the original 200 questions
+([robustness check](#robustness-check-the-claude-runs-without-the-projects-context-n--200)),
+which leave out this project's notes. † The clean n = 200 run did not
+include the in-prompt price, so these two values come from the 133 new
+questions of [Addendum J](#larger-clean-study-133-new-questions-and-a-second-sample-addendum-j)
+(Fable's run there is partial). The original, contaminated Claude values
+are kept in the sections below, next to the clean ones.
 
 What this supports:
 
@@ -50,13 +81,20 @@ What this supports:
    −0.02). Their strongest lever is a stated reason, "because the market
    is leaning that way", with no number (Opus 0.14, Fable 0.17).
 2. **Resisting pressure is not the same as weighing evidence.** No model
-   tested tells a real market price from a fabricated one. In the clean
+   tested rejects a fabricated market price. In the clean
    re-run, Opus 5.5 moved toward a false price in 183 of 185 cases and
-   Fable 5.2 in 183 of 184. A false price cost the Claude models 0.07 to
+   Fable 5.2 in 183 of 184; adding the 133 new questions of Addendum J,
+   573 of 576. A false price cost the Claude models 0.07 to
    0.09 Brier and the Gemmas 0.17 to 0.19;
    Gemma 12B puts weight about 1 on whatever number the user cites. For
    the Claude models, which resist bare pressure, the exposure is not
    flattery, it is unverifiable claims phrased as evidence.
+   Exploratory, not pre-registered: on the questions asked both ways, the
+   Claude models put somewhat less weight on the made-up price than on the
+   real one (paired difference +0.14 [+0.07, +0.21] for Opus, +0.11
+   [+0.03, +0.19] for Fable; [results/summary.md](results/summary.md)).
+   Truth is confounded with the quote's direction and distance in this
+   design, so that gap is not evidence that the models detect false prices.
 3. **Withdrawn after the clean re-run.** The original runs suggested
    Fable 5.2 under-uses a true quote (weight 0.33) and leans on a false
    one more than a true one. Clean, its weights are 0.65 (true) and 0.56
@@ -278,12 +316,15 @@ figures, because the study did not complete for both models.
 | Opinion gap | 0.09 [0.08, 0.11] | 0.10 [0.08, 0.12] | 0.10 [0.08, 0.11] | 0.06 [0.04, 0.07] | 0.05 [0.04, 0.07] (n=97) |
 | "I disagree": move | 0.03 [0.02, 0.04] | 0.03 [0.02, 0.04] | 0.02 [0.02, 0.03] | 0.02 [0.01, 0.03] | 0.01 [0.00, 0.02] (n=97) |
 | "I disagree": crossing 50% | 6% | 10% | 7% | 4% | 3% |
-| Market price in the prompt: weight | 0.86 | 0.85 [0.82, 0.89] | | 0.85 | 0.89 [0.83, 0.93] |
+| Market price in the prompt: weight | 0.86 (original run&nbsp;*) | 0.85 [0.82, 0.89] | | 0.85 (original run&nbsp;*) | 0.89 [0.83, 0.93] |
 | Guard prompt: opinion gap | | 0.05 [0.04, 0.06] | | | 0.02 [0.01, 0.03] |
 | Real price from the user: weight | 0.75 | 0.75 [0.71, 0.78] | | 0.65 | 0.67 [0.59, 0.76] (n=89) |
 | False price: followed | 183 of 185 | 126 of 126 | | 183 of 184 | 81 of 81 |
 | False price: weight | 0.63 | 0.62 [0.55, 0.68] | | 0.56 | 0.61 [0.55, 0.67] |
 | False price: Brier change | +0.09 | +0.10 [+0.07, +0.12] | | +0.07 | +0.08 [+0.05, +0.12] |
+
+\* The clean n = 200 run did not include the in-prompt price, so these two
+cells are from the original runs, which saw the project's context.
 
 Every pre-registered replication prediction held for the parts that ran:
 the new questions reproduce the clean numbers within their CIs, and Opus's
@@ -469,7 +510,7 @@ for a false quote, are skipped by design (4B: 3 and 4; 12B: 8 and 14).
 | "I disagree" (Exp. 1): move | 0.30 | 0.23 |
 | Real price from the user: move | 0.31 [0.28, 0.34] | 0.28 [0.25, 0.31] |
 | Informed minus bare move | +0.01 [−0.03, +0.04] | +0.05 [+0.02, +0.08] |
-| Weight on the real price | 0.67 [0.61, 0.72] | 0.95 [0.92, 0.99] |
+| Weight on the real price | 0.66 [0.61, 0.72] | 0.95 [0.92, 0.99] |
 | Weight on a false price | 0.83 [0.77, 0.89] | 0.97 [0.93, 1.00] |
 | Brier: before → real price → false price | 0.303 → 0.151 → 0.494 | 0.284 → 0.135 → 0.460 |
 
@@ -705,11 +746,15 @@ with the real market price on the day it was asked, used as the evidence
 condition. The snapshot is pinned (files dated ≤ 2026-11-08) and its SHA-256
 is in [PREREGISTRATION.md](PREREGISTRATION.md); it rebuilds byte-for-byte.
 
-**Models.** `gemma3:4b` and `gemma3:12b` (Q4_K_M) through Ollama on a laptop
-(Apple M2 Max), greedy decoding (temperature 0, seed 0). Same family and
-training data, two sizes. With greedy decoding each (question, condition) has
-one deterministic answer, so a paired difference is the effect of the prompt
-change rather than sampling noise.
+**Models.** `gemma3:4b`, `gemma3:12b` and `gemma3:27b` (Q4_K_M) through
+Ollama on a laptop (Apple M2 Max), greedy decoding (temperature 0, seed 0).
+Same family and training data, three sizes. With greedy decoding each
+(question, condition) has one deterministic answer, so a paired difference
+is the effect of the prompt change rather than sampling noise. Claude Opus
+5.5 and Fable 5.2 ran through the Claude Code CLI on a subscription, on a
+second set of 200 questions asked after their knowledge cutoff
+(`data/questions_post_2026-06.jsonl`); use the clean-route results (see the
+robustness check).
 
 **Conditions.** Each one changes exactly one thing from the baseline prompt.
 
@@ -745,10 +790,21 @@ against ground truth before they are used on a real model.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                       # 37 tests, no network, no model
-ollama pull gemma3:4b && ollama pull gemma3:12b
-bash scripts/reproduce.sh                 # data snapshot -> runs -> reports
+python -m pytest -q                       # 55 tests, no network, no model
+python -m fsyc.summary                    # results/summary.md and figures/summary.png
+ollama pull gemma3:4b && ollama pull gemma3:12b && ollama pull gemma3:27b
+bash scripts/reproduce.sh                 # data snapshot -> Gemma runs -> reports
+
+# Claude, clean route: needs a logged-in Claude Code CLI; resumable
+python -m fsyc.run --model claude-code-clean:opus \
+  --questions data/questions_post_2026-06.jsonl \
+  --conditions baseline,assert_yes,assert_no,placebo,pushback,pushback_informed,pushback_misinformed,dose \
+  --out results/claude-code-clean__opus.jsonl
+python -m fsyc.analyze results/claude-code-clean__opus.jsonl --outdir results/claude-code-clean__opus
 ```
+
+For Fable, use `claude-code-clean:fable` and the `__fable` file names.
+[results/README.md](results/README.md) says which file is which.
 
 Runs are resumable. Raw model outputs for every call are in `results/*.jsonl`
 (the `raw` field), so every number here can be traced to the text the model
@@ -762,6 +818,7 @@ produced.
 | `fsyc/run.py` | Questions × conditions → JSONL, resumable |
 | `fsyc/analyze.py` | Pre-registered statistics, tables, figures |
 | `fsyc/compare.py` | Side-by-side models, paired difference in opinion gap |
+| `fsyc/summary.py` | Headline numbers across runs, pooled count with a Wilson interval, summary figure |
 | `fsyc/metrics.py` | Brier, log loss, ECE, Murphy decomposition, AUROC, bootstrap |
 
 ## Related work, and what this adds
@@ -804,14 +861,14 @@ effect that matters, which is whether it also stops the model using evidence.
   Opus 5.5 and Fable 5.2) went through a product harness with context I cannot see, on
   200 different questions; a clean API run on the same questions is the
   obvious next step and was not done for cost.
-- **One wording per condition.** Each condition is a single phrasing. The
-  effect size depends on wording ("pretty confident" vs. "certain", with or
-  without a stated credential). A natural extension is a dose-response over
-  assertion strength.
+- **Wording.** Experiment 2 varied the wording of the opinion (five
+  phrasings); every other condition, including the cited prices, uses a
+  single phrasing, and effect sizes depend on wording.
 - **Greedy decoding.** One deterministic answer per prompt. This makes paired
   differences clean but says nothing about sampling variance. The placebo
-  shows the model is sensitive to small irrelevant prompt changes (mean
-  |Δp| = 0.12), which is its own robustness finding.
+  shows Gemma 3 4B is sensitive to small irrelevant prompt changes (mean
+  |Δp| = 0.12; 0.03 to 0.07 for the other models), which is its own
+  robustness finding.
 - **The guard prompt was written once and tested once.** It is not tuned,
   but it may still fit
   to this setup. It should be tested on held-out wordings and other
@@ -826,6 +883,10 @@ effect that matters, which is whether it also stops the model using evidence.
   single pre-registered headline.
 
 ## Next steps
+
+The concrete plan, with commands, is in [NEXT_EXPERIMENTS.md](NEXT_EXPERIMENTS.md).
+It starts with work that is already pre-registered: finishing Fable's part
+of Addendum J, then Addenda I and K. Beyond that:
 
 1. More families and sizes before any claim about scale, and Experiments
    2 to 4 on 27B.
