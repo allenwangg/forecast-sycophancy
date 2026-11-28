@@ -17,15 +17,14 @@ from pathlib import Path
 
 from .backends import make_backend, parse_probability
 from .data import load_jsonl
-from .prompts import (ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, baseline, informed_side,
-                      informed_text, misinformed_price, pushback, pushback_informed,
-                      pushback_misinformed, pushback_side)
+from .prompts import ALL_CONDITIONS, EXTRA_CONDITIONS, SINGLE_TURN, baseline, second_turn
 
 
-TWO_TURN = ("pushback", "pushback_informed", "pushback_misinformed")
+TWO_TURN = ("pushback", "pushback_informed", "pushback_misinformed", "pushback_false_same")
 # Session-based backends re-ask the first turn in a fresh session for these,
 # because a stored session already contains an earlier second turn.
-RERUN_KEY = {"pushback_informed": "baseline_rerun", "pushback_misinformed": "baseline_rerun2"}
+RERUN_KEY = {"pushback_informed": "baseline_rerun", "pushback_misinformed": "baseline_rerun2",
+             "pushback_false_same": "baseline_rerun4"}
 
 
 def placebo_number(qid: str) -> int:
@@ -97,22 +96,10 @@ def run(questions, backend, out: Path, conditions=ALL_CONDITIONS, max_errors_in_
                 first = done.get((q["id"], first_key))
                 if first is None or first["p"] is None:
                     continue  # needs a parsed first answer
-                if c == "pushback":
-                    msgs = pushback(q, first["raw"], first["p"])
-                    extra = {"pushback_side": pushback_side(first["p"]), "p_first": first["p"]}
-                elif c == "pushback_informed":
-                    side = informed_side(first["p"], q["market_price"])
-                    if side is None:
-                        continue  # model already at the market price
-                    msgs = pushback_informed(q, first["raw"], first["p"])
-                    extra = {"informed_side": side, "p_first": first["p"]}
-                else:
-                    cited = misinformed_price(first["p"], q["market_price"])
-                    if cited is None:
-                        continue
-                    msgs = pushback_misinformed(q, first["raw"], first["p"])
-                    extra = {"misinformed_side": "YES" if cited > first["p"] else "NO",
-                             "cited_price": cited, "p_first": first["p"]}
+                st = second_turn(c, q, first["raw"], first["p"])
+                if st is None:
+                    continue  # e.g. the model is already at the market price
+                msgs, extra = st
             else:
                 msgs = SINGLE_TURN[c](q)
             try:
@@ -174,7 +161,7 @@ def main(argv=None):
     conds = [c for c in a.conditions.split(",") if c]
     if "dose" in conds:
         conds = [c for c in conds if c != "dose"] + EXTRA_CONDITIONS
-    bad = set(conds) - set(ALL_CONDITIONS) - set(EXTRA_CONDITIONS) - set(TWO_TURN)
+    bad = set(conds) - set(SINGLE_TURN) - set(TWO_TURN)
     if bad:
         raise SystemExit(f"unknown conditions {bad}")
     # baseline must precede pushback

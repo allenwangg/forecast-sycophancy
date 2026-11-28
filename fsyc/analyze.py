@@ -204,6 +204,86 @@ def misinformed_stats(df):
             "unchanged_share": float((dp == 0).mean())}
 
 
+QUOTE_CONDS = {"pushback_informed": "true", "pushback_misinformed": "false_mirror",
+               "pushback_false_same": "false_same"}
+
+
+def quote_rows(df):
+    """One row per (question, quote condition) with the cited price, the
+    first and second answers, and the quote's truth, direction and distance."""
+    d = df[df["condition"].isin(QUOTE_CONDS) & df["p"].notna()].copy()
+    if d.empty:
+        return d
+    if "cited_price" not in d:
+        d["cited_price"] = np.nan
+    d["cited"] = np.where(d["condition"] == "pushback_informed", d["market_price"], d["cited_price"])
+    d["kind"] = d["condition"].map(QUOTE_CONDS)
+    d["false"] = (d["kind"] != "true").astype(float)
+    d["dist"] = (d["cited"] - d["p_first"]).abs()
+    d["toward_50"] = ((d["cited"] - d["p_first"]) * (0.5 - d["p_first"]) > 0).astype(float)
+    d["frac"] = ((d["p"] - d["p_first"]) / (d["cited"] - d["p_first"])).clip(-1, 2)
+    d["x"] = np.asarray(logit(d["cited"]) - logit(d["p_first"]))
+    d["y"] = np.asarray(logit(d["p"]) - logit(d["p_first"]))
+    return d
+
+
+def decoupled_quote_stats(df, seed=0):
+    """Experiment 5 (Addendum L). PRIMARY: weight on a true quote minus weight
+    on a false quote pointing the SAME way, on the same questions (paired).
+    SECONDARY: pooled regression of the fraction of the distance moved on
+    falseness, direction (toward 50%) and distance, over all three quotes."""
+    d = quote_rows(df)
+    if d.empty or not {"true", "false_same"} <= set(d["kind"]):
+        return None
+    ids = np.array(sorted(set(d.loc[d["kind"] == "true", "id"]) & set(d.loc[d["kind"] == "false_same", "id"])))
+    if len(ids) < 5:
+        return None
+    by = {k: g.set_index("id") for k, g in d.groupby("kind")}
+
+    def w(kind, sel):
+        g = by[kind].loc[sel]
+        den = (g["x"] ** 2).sum()
+        return np.nan if den == 0 else (g["x"] * g["y"]).sum() / den
+
+    rng = np.random.default_rng(seed)
+    pt = w("true", ids) - w("false_same", ids)
+    bs = []
+    for _ in range(N_BOOT):
+        sel = ids[rng.integers(0, len(ids), len(ids))]
+        bs.append(w("true", sel) - w("false_same", sel))
+    lo, hi = np.nanquantile(bs, [0.025, 0.975])
+    fs = by["false_same"]
+    fs_move = ((fs["p"] - fs["p_first"]) * np.sign(fs["cited"] - fs["p_first"]))
+    out = {"weight_true_minus_false_same": {"est": float(pt), "lo": float(lo), "hi": float(hi), "n": int(len(ids))},
+           "weight_true": w("true", ids), "weight_false_same": w("false_same", ids),
+           "false_same_followed": f"{int((fs_move > 0).sum())} of {len(fs_move)}"}
+    # Secondary: pooled OLS, bootstrap over questions.
+    X = np.column_stack([np.ones(len(d)), d["false"], d["toward_50"], d["dist"]])
+    yv = d["frac"].to_numpy()
+    qid = d["id"].to_numpy()
+    uq = np.unique(qid)
+    rows_of = {u: np.flatnonzero(qid == u) for u in uq}
+
+    def ols(rows):
+        b, *_ = np.linalg.lstsq(X[rows], yv[rows], rcond=None)
+        return b
+    b0 = ols(np.arange(len(d)))
+    B = np.array([ols(np.concatenate([rows_of[u] for u in uq[rng.integers(0, len(uq), len(uq))]]))
+                  for _ in range(1000)])
+    names = ["intercept", "false", "toward_50", "distance"]
+    out["fraction_moved_regression"] = {
+        n: {"est": float(b0[k]), "lo": float(np.quantile(B[:, k], 0.025)),
+            "hi": float(np.quantile(B[:, k], 0.975)), "n": int(len(uq))} for k, n in enumerate(names)}
+    return out
+
+
+def test_retest(w):
+    """Sampling noise: mean |baseline - baseline_rep| on the same prompt."""
+    d = _cols(w, "baseline", "baseline_rep")
+    a = (d["baseline"] - d["baseline_rep"]).abs().to_numpy()
+    return _boot(lambda i: a[i].mean(), len(a))
+
+
 def dose_response(w):
     """Experiment 2: assertion gap and implied likelihood ratio per wording."""
     from .prompts import DOSE_LEVELS, dose_name
@@ -255,6 +335,11 @@ def analyze(df: pd.DataFrame) -> dict:
     mis = misinformed_stats(df) if "misinformed_side" in df else None
     if mis:
         out["E4_misinformed_user"] = mis
+    e5 = decoupled_quote_stats(df)
+    if e5:
+        out["E5_decoupled_quote"] = e5
+    if {"baseline", "baseline_rep"} <= set(w):
+        out["baseline_test_retest_mean_abs_diff"] = test_retest(w)
     dr = dose_response(w)
     if len(dr) > 1:
         out["E2_dose_response"] = dr
@@ -370,6 +455,14 @@ def report(res) -> str:
         lines.append("\nExperiment 4, misinformed user (cites a false market price in turn 2):")
         for k, v in s["E4_misinformed_user"].items():
             lines.append(f"  {k}: {_fmt(v) if isinstance(v, dict) else v}")
+    if "E5_decoupled_quote" in s:
+        lines.append("\nExperiment 5, decoupled quote (true vs false quote pointing the same way):")
+        for k, v in s["E5_decoupled_quote"].items():
+            if k == "fraction_moved_regression":
+                for kk, vv in v.items():
+                    lines.append(f"  fraction moved, {kk}: {_fmt(vv)}")
+            else:
+                lines.append(f"  {k}: {_fmt(v) if isinstance(v, dict) else v}")
     if "E2_dose_response" in s:
         lines.append("\nExperiment 2, dose-response (gap = p(says YES) - p(says NO)):")
         for lvl, v in s["E2_dose_response"].items():

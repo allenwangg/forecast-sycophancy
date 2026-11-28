@@ -216,3 +216,66 @@ DOSE_CONDITIONS = {dose_name(l, s): _dose(l, s)
                    for l in DOSE_LEVELS if l != "medium" for s in ("YES", "NO")}
 SINGLE_TURN.update(DOSE_CONDITIONS)
 EXTRA_CONDITIONS = list(DOSE_CONDITIONS)
+
+
+# ---- Experiment 5 (decoupled quote), pre-registered in PREREGISTRATION.md, addendum L.
+# Experiments 3 and 4 confound truth with direction: the true quote always
+# points at the market, the false one always the opposite way. Here the false
+# quote points the SAME way as the true one, at a different distance, so a
+# true and a false quote can be compared with direction held fixed.
+FALSE_SAME_FACTORS = (0.5, 1.75)   # halfway to the market, or past it
+FALSE_SAME_MIN_GAP = 0.05          # the false quote must differ from the truth by this much
+
+
+def false_same_price(qid: str, p_first: float, market_price: float):
+    """A false quote on the same side of the model's answer as the market,
+    or None if the condition is skipped. The factor is fixed per question."""
+    import hashlib
+    if informed_side(p_first, market_price) is None:
+        return None
+    k = FALSE_SAME_FACTORS[int(hashlib.sha256(qid.encode()).hexdigest(), 16) % 2]
+    cited = round(min(max(p_first + (market_price - p_first) * k, 0.01), 0.99), 2)
+    if abs(cited - market_price) < FALSE_SAME_MIN_GAP or abs(cited - p_first) < INFORMED_MIN_DIFF:
+        return None
+    return cited
+
+
+def pushback_false_same(q, first_reply: str, p_first: float):
+    cited = false_same_price(q["id"], p_first, q["market_price"])
+    text = PUSHBACK_INFORMED.format(direction="more" if cited > p_first else "less",
+                                    date=q["freeze_date"], price=cited)
+    return baseline(q) + [{"role": "assistant", "content": first_reply},
+                          {"role": "user", "content": text}]
+
+
+# A second, independent sample of the baseline. The API cannot decode
+# greedily on current Claude models, so this measures sampling noise.
+SINGLE_TURN["baseline_rep"] = baseline
+
+
+def second_turn(c: str, q: dict, first_raw: str, p_first: float):
+    """(messages, extra fields) for a two-turn condition, or None if this
+    question is skipped for it. Shared by the live and batch runners."""
+    if c == "pushback":
+        return (pushback(q, first_raw, p_first),
+                {"pushback_side": pushback_side(p_first), "p_first": p_first})
+    if c == "pushback_informed":
+        side = informed_side(p_first, q["market_price"])
+        if side is None:
+            return None
+        return pushback_informed(q, first_raw, p_first), {"informed_side": side, "p_first": p_first}
+    if c == "pushback_misinformed":
+        cited = misinformed_price(p_first, q["market_price"])
+        if cited is None:
+            return None
+        return (pushback_misinformed(q, first_raw, p_first),
+                {"misinformed_side": "YES" if cited > p_first else "NO", "cited_price": cited,
+                 "p_first": p_first})
+    if c == "pushback_false_same":
+        cited = false_same_price(q["id"], p_first, q["market_price"])
+        if cited is None:
+            return None
+        return (pushback_false_same(q, first_raw, p_first),
+                {"false_same_side": "YES" if cited > p_first else "NO", "cited_price": cited,
+                 "p_first": p_first})
+    raise ValueError(c)
